@@ -1,0 +1,10 @@
+@startuml Maquina de Estados Bolsin
+[*] -> Creado : 19. Generar Bolsin/new()
+Creado -> Cerrado : \n39. Cerrar Bolsin/cerrar()
+Cerrado -> Creado : 40. Reabrir Bolsin/reabrir()
+Creado ---> DeBaja : 21. Eliminar Bolsin/eliminar()
+Cerrado -> DeBaja : 21. Eliminar Bolsin/eliminar()
+Cerrado --> Enviado : 27. Registrar el retiro de bolsines/enviar()
+Enviado --> Recibido : 28. Registrar recepción de bolsin/recibir()
+DeBaja --> [*]
+Recibido -> [*]
