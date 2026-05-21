@@ -1,0 +1,90 @@
+' Flujo Descripto: Búsqueda de bolsines y visualización en el mapa con GPS Tracker modelo XTR-4500L
+' 1. EB: selecciona la opción para consultar la ubicación de uno o varios bolsines.
+' 2. Sistema: busca y muestra la CM del usuario logueado.
+' 3. Sistema: busca los bolsines en estado Enviado cuya CM origen es igual a la CM del usuario logueado.
+' 4. Sistema: solicita al dispositivo GPS Tracker los datos de localización de los bolsines.
+' 5. Sistema: recibe del dispositivo GPS Tracker los datos de localización de cada uno de esos bolsines (ver
+' observación 1).
+' 6. Sistema: muestra sobre un mapa la posición de los bolsines, habilitando la opción de seleccionar un bolsín del
+' mapa o filtrar por número de precinto o CM destino.
+' 7. EB: selecciona un bolsín del mapa.
+' 8. Sistema: consulta si se desea enviar un correo electrónico al Gerente de Comisión Médica destino para informar
+' la ubicación del Bolsín.
+' 9. EB: confirma el envío del correo electrónico.
+' 10. Sistema: busca la dirección de correo electrónico del GCM destino.
+' 11. Sistema: para informar número de bolsín, fecha y hora de última actualización, y las coordenadas del bolsín, se
+' incluye al Caso de Uso 31 Notificar ubicación de bolsín. Informa la ejecución exitosa del caso de uso 31. Fin del
+' caso de uso
+
+'IMPORTANTE NO BORRAR PLS
+' NO se puede poner caracteristicas en los nombres de las entidades
+'ejemplo: Usuario logueado, sesion actual. Se usa
+' L:Usuario, A:Sesion, etc.
+'Clase nombrada: NombreClase : Clase
+
+@startuml test
+autonumber
+
+actor ":Encargado Bolsin" as EB
+boundary ":PantSegBolsines" as P
+control ":GestorSegBolsines" as G
+entity "A:Sesion" as S
+entity "L:Usuario" as U
+entity "L:Empleado" as E
+entity ":Comision Medica" as CM
+entity ":Bolsin" as B
+entity ":CambioDeEstadoBolsin" as estB
+entity "A:CambioDeEstadoBolsin" as estBActual
+entity ":Estado" as EST
+actor ":GPSTracker" as GPS
+actor ":GerenteComisionMedica" as GCM
+
+ 
+EB -> P: consultarUbicBolsines()
+P-> P: habilitarVentana()
+P-> G: consultarUbicBolsines() 
+G-> G: buscarCMUsuarioLogueado()
+G -> S: buscarUsuarioLogueado()
+S-> U: obtenerEmpleado()
+G-> G: buscarCMEmpleado()
+U-> E: obtenerNombreCM()
+E -> CM: obtenerNombre()
+G-> P: mostrarNombreCM()
+G-> G: buscarEstadoBolsines()
+' LOOP para buscar Primero traer Bolsin, luego su CM
+'todo-
+'1. Buscar todos los bolsines
+'2. Entre esos, buscar los bolsines con CM igual al del usuario
+'3. Mostrar esos
+
+G -> B: buscarBolsinesEnEstadoEnviado()
+
+group Bolsines en estado Enviado [mientras haya bolsines]
+    B -> B: esCMOrigenUsuario()
+    B -> estB: comprobarEstadoActual()
+    estB -> estBActual: *esActual()
+    estBActual -> EST: *esEnviado()         
+end
+
+G -> B: obtenerLocalizacionBolsines()
+B -> GPS: solicitarDatosLocalizacion()
+G -> P: mostrarBolsinesEnMapa()
+G -> P: pedirSeleccionBolsin()
+EB -> P: tomarSeleccionBolsin()
+G -> P: pedirConfirmacionEnvio()
+EB -> P: confirmarEnvioCorreo()
+P -> G: tomarConfirmacionEnvio()
+
+G -> G: buscarEmailGCMDestino()
+G -> CM: obtenerEmailGerente()
+G -> GCM: notificarUbicacionBolsin()
+
+G -> P: mostrarEjecucionExitosa()
+P -> P: finCU()
+
+
+
+' tendremos que hacer una entity gps tracker ?
+' es algo que segun entiendo tiene cada bolsin enviado
+
+@end
