@@ -33,6 +33,8 @@ entity "logueado:Usuario" as User <<entity>>
 entity "logueado:Empleado" as EmpLog <<entity>>
 entity ":ComisionMedica" as CMOrig <<entity>>
 entity ":Bolsin" as BolsinAux <<entity>>
+entity ":CambioEstadoBolsin" as CEBolsin <<entity>>
+entity "A:CambioEstadoBolsin" as ACEBolsin <<entity>>
 actor ":GPSTracker" as GPS
 actor ":ServidorGoogleMaps" as Maps
 entity "elegida:Bolsin" as Bolsin <<entity>> #FCE4D6
@@ -58,7 +60,6 @@ activate Ctrl
         activate User
             User -> EmpLog : getCM()
             activate EmpLog
-                EmpLog -> EmpLog : getCM()
                 activate EmpLog
                 deactivate EmpLog
             deactivate EmpLog
@@ -70,7 +71,7 @@ Ctrl -> UI : mostrarCMUsuario()
 
 Ctrl -> Ctrl : buscarBolsinesEnviados()
 activate Ctrl
-    Ctrl -> CMOrig : buscarBolsinesEnviados()
+    Ctrl -> BolsinAux : buscarBolsinesEnviados()
     activate CMOrig
         loop [BúsquedaBolsines] [Mientras haya bolsines]
             CMOrig -> BolsinAux : verificarCorrespondencia(cmOrigen)

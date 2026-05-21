@@ -1,5 +1,5 @@
 
-' Flujo Descripto: Búsqueda de bolsines y visualización en el mapa con GPS Tracker modelo XTR-4500L
+' Flujo: Búsqueda de bolsines y visualización en el mapa con GPS Tracker modelo XTR-4500L
 ' 1. EB: selecciona la opción para consultar la ubicación de uno o varios bolsines.
 ' 2. Sistema: busca y muestra la CM del usuario logueado.
 ' 3. Sistema: busca los bolsines en estado Enviado cuya CM origen es igual a la CM del usuario logueado.
@@ -32,43 +32,52 @@ control ":GestorSegBolsines" as G
 entity "A:Sesion" as S
 entity "L:Usuario" as U
 entity "L:Empleado" as E
-entity ":Bolsin" as B
-entity ":Comision Medica" as CM
-entity ":CambioDeEstadoBolsin" as estB
 
- 
-EB -> P: consultarUbicBolsines()
+entity ":Bolsin" as B #FFD1DC
+entity ":Comision Medica" as CM
+entity ":CambioDeEstadoBolsin" as cEstB #FFD1DC
+
+entity "A:CambioDeEstadoBolsin" as estAB
+entity "A:EstadoBolsin" as estB
+
+' interfaz clase fabricacion pura
+boundary "GPS Tracker" as GPS 
+actor "Mapa" as Map
+
+
+' 1. EB: selecciona la opción para consultar la ubicación de uno o varios bolsines.
+EB -> P: opConsultarUbicBolsines()
 P-> P: habilitarVentana()
-P-> G: consultarUbicBolsines() 
+P-> G: opConsultarUbicBolsines() 
+
+' 2. Sistema: busca y muestra la CM del usuario logueado.
 G-> G: buscarCMUsuarioLogueado()
 G -> S: buscarUsuarioLogueado
 S-> U: obtenerEmpleado()
-G-> G: buscarCMEmpleado()
 U-> E: obtenerNombreCM()
-E -> CM: obtenerNombre()
+E -> CM: obtenerNombreCM()
+E -> CM: obtenerCodigoCM()
 G-> P: mostrarNombreCM()
 
+' 3. Sistema: busca los bolsines en estado Enviado cuya CM origen es igual a la CM del usuario logueado.
 G-> G: buscarEstadoBolsines()
-' LOOP para buscar Primero traer Bolsin, luego su CM
-'todo-
-'1. Buscar todos los bolsines
-'2. Entre esos, buscar los bolsines con CM igual al del usuario
-'3. Mostrar esos
-
 group Bolsines en estado Enviado [mientras haya bolsines]
     G -> B: buscarBolsinesEnEstadoEnviado()
-    B -> B: esCMOrigenUsuario()
-    B -> estB: ()    
-
-
-
-
-    ' G->G: validarCM(cmUsuario,cmBolsin)
-    ' B -> estB: sosEnviado()    
-
-    
+    B -> cEstB: esActual()
+    B -> estAB: esActual()
+    estAB-> estB: sosEnviado()
+    G-> B: esTuCMDeOrigen()
 end
-' tendremos que hacer una entity gps tracker ?
-' es algo que segun entiendo tiene cada bolsin enviado
+
+' 4. Sistema: solicita al dispositivo GPS Tracker los datos de localización de los bolsines.
+' 5. Sistema: recibe del dispositivo GPS Tracker los datos de localización de cada uno de esos bolsines
+G-> G: buscarDatosLocalizacionBolsines()
+G-> GPS: obtenerDatosLocalizacion()
+
+' 6. Sistema: muestra sobre un mapa la posición de los bolsines, habilitando la opción de seleccionar un bolsín del
+' mapa o filtrar por número de precinto o CM destino.
+GPS-> Map: mostrarPosicionBolsines()
+G-> P: mostrarLocalizacionBolsin()
+
 
 @end
