@@ -36,7 +36,9 @@ entity "L:Usuario" as U
 entity "L:Empleado" as E
 
 entity ":Bolsin" as B #FFD1DC
+entity "S:Bolsin" as Bs 
 entity ":Comision Medica" as CM
+entity "S:Comision Medica" as CMs
 entity ":CambioDeEstadoBolsin" as cEstB #FFD1DC
 
 entity "A:CambioDeEstadoBolsin" as estAB
@@ -45,7 +47,12 @@ entity "A:EstadoBolsin" as estB
 ' interfaz clase fabricacion pura
 boundary "GPS Tracker" as GPS 
 actor "Mapa" as Map
+entity ":Empleado" as Em #FFD1DC
+entity ":Rol" as R 
+
 participant "CU31" as CU31
+
+
 
 
 ' 1. EB: selecciona la opción para consultar la ubicación de uno o varios bolsines.
@@ -67,7 +74,7 @@ G-> G: buscarBolsines()
 group Bolsines en estado Enviado [mientras haya bolsines]
     G -> B: buscarBolsinesEnEstadoEnviado()
     B -> cEstB: sosActual()
-    B -> estAB: sosActual()
+    cEstB -> estAB: sosActual()
     estAB-> estB: sosEnviado()
     G-> B: esTuCMDeOrigen()
     G-> B: obtenerNumeroPrecinto()
@@ -91,18 +98,39 @@ P-> G: tomarSeleccionBolsin()
 
 ' 8. Sistema: consulta si se desea enviar un correo electrónico al Gerente de Comisión Médica destino para informar
 ' la ubicación del Bolsín.
-G->G: enviarMail()
-G->P: solicitarSeleccionMail()
-EB-> P: tomarSeleccionMail()
-P-> G: tomarSeleccionMail()
-
-'include
-G-> CU31: llamarCUNotificacionMail()
+G->P: mostrarOpEnviarMail()
 
 ' 9. EB: confirma el envío del correo electrónico.
+EB-> P: tomarConfirmacionEnvioMail()
+P-> G: tomarConfirmacionEnvioMail()
+
 ' 10. Sistema: busca la dirección de correo electrónico del GCM destino.
+G->G: buscarMailGerente()
+G-> Bs: obtenerCMDestino()
+Bs-> CMs: esTuCMDestino()
+
+group Empleados CM Destino [mientras haya empleados]
+    CMs-> Em: obtenerEmpleado()
+    Em-> R: sosGerente()
+    Em-> R: obtenerMail()
+end
+
+G-> G: enviarMailGerente()
+G-> P: mostrarMensajeEnvioMail()
+
 ' 11. Sistema: para informar número de bolsín, fecha y hora de última actualización, y las coordenadas del bolsín, se
+G -[#blue,dashed]-> CU31: <<include>> llamarCUNotificacionBolsin()
+G->G: finCU()
 
 
+' un par de cosas, si aplicas patron experto en la parte de la consulta de si es actu' le pregunte a su estado actual A:Cambior' el bolsin tiene que preguntar a su cambio estado si es actual para trigge
+
+'no lo hace ya?
 
 @end
+
+
+'por mi parte no se me ocurre que mas cambiar
+
+
+'lo subo al github?
