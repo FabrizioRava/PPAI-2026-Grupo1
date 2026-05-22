@@ -63,11 +63,11 @@ E -> CM: obtenerCodigoCM()
 G-> P: mostrarNombreCM()
 
 ' 3. Sistema: busca los bolsines en estado Enviado cuya CM origen es igual a la CM del usuario logueado.
-G-> G: buscarEstadoBolsines()
+G-> G: buscarBolsines()
 group Bolsines en estado Enviado [mientras haya bolsines]
     G -> B: buscarBolsinesEnEstadoEnviado()
-    B -> cEstB: esActual()
-    B -> estAB: esActual()
+    B -> cEstB: sosActual()
+    B -> estAB: sosActual()
     estAB-> estB: sosEnviado()
     G-> B: esTuCMDeOrigen()
     G-> B: obtenerNumeroPrecinto()
@@ -80,7 +80,7 @@ G-> GPS: obtenerDatosLocalizacion()
 
 ' 6. Sistema: muestra sobre un mapa la posición de los bolsines, habilitando la opción de seleccionar un bolsín del
 ' mapa o filtrar por número de precinto o CM destino.
-GPS-> Map: mostrarPosicionBolsines()
+GPS-> Map: obtenerDatosLocalizacion()
 G-> P: mostrarLocalizacionBolsin()
 
 
