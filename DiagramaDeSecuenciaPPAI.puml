@@ -1,4 +1,4 @@
-@startuml
+@startuml PPAI
 autonumber "<b>00-"
 skinparam style strictuml
 skinparam ranking as actores
@@ -28,15 +28,26 @@ title Diagrama de Secuencia: CU 36 - Consultar seguimiento de bolsines
 actor ":EncargadoBolsines" as EB
 boundary ":InterfazSeguimiento" as UI <<boundary>>
 control ":GestorSeguimientoBolsines" as Ctrl <<control>>
+
+' Entidades del sistema
 entity "activa:Sesion" as Sesion <<entity>>
 entity "logueado:Usuario" as User <<entity>>
 entity "logueado:Empleado" as EmpLog <<entity>>
 entity ":ComisionMedica" as CMOrig <<entity>>
 entity ":Bolsin" as BolsinAux <<entity>>
-entity ":CambioEstadoBolsin" as CEBolsin <<entity>>
-entity "A:CambioEstadoBolsin" as ACEBolsin <<entity>>
+entity "actual:CambioEstadoBolsin" as CambioEstado <<entity>>
+entity "actual:Estado" as Estado <<entity>>
+entity "P:Precinto" as Precinto <<entity>>
+
+' Boundaries de Fabricación Pura para Actores Externos
+boundary ":IAdaptadorGPS" as AdaptadorGPS <<boundary>>
+boundary ":IAdaptadorMaps" as AdaptadorMaps <<boundary>>
+
+' Actores Externos
 actor ":GPSTracker" as GPS
 actor ":ServidorGoogleMaps" as Maps
+
+' Entidades de la segunda fase del flujo
 entity "elegida:Bolsin" as Bolsin <<entity>> #FCE4D6
 entity "cmBolsinSeleccionado:ComisionMedica" as CMDest <<entity>>
 entity ":Empleado" as EmpCorp <<entity>>
@@ -60,6 +71,7 @@ activate Ctrl
         activate User
             User -> EmpLog : getCM()
             activate EmpLog
+                EmpLog -> EmpLog : getCM()
                 activate EmpLog
                 deactivate EmpLog
             deactivate EmpLog
@@ -71,34 +83,75 @@ Ctrl -> UI : mostrarCMUsuario()
 
 Ctrl -> Ctrl : buscarBolsinesEnviados()
 activate Ctrl
-    Ctrl -> BolsinAux : buscarBolsinesEnviados()
+    Ctrl -> CMOrig : buscarBolsinesEnviados()
     activate CMOrig
         loop [BúsquedaBolsines] [Mientras haya bolsines]
-            CMOrig -> BolsinAux : verificarCorrespondencia(cmOrigen)
+            CMOrig -> BolsinAux : verificarCorrespondencia()
             activate BolsinAux
-                BolsinAux -> BolsinAux : esTuCMOrigen(cmOrigen)
+                BolsinAux -> BolsinAux : esTuCMOrigen()
                 activate BolsinAux
                 deactivate BolsinAux
-                BolsinAux -> BolsinAux : sosEnviado()
-                activate BolsinAux
-                deactivate BolsinAux
+                
+                BolsinAux -> CambioEstado : sosActual()
+                activate CambioEstado
+                deactivate CambioEstado
+                
+                BolsinAux -> CambioEstado : sosEnviado()
+                activate CambioEstado
+                    CambioEstado -> Estado : esEnviado()
+                    activate Estado
+                    deactivate Estado
+                deactivate CambioEstado
             deactivate BolsinAux
         end
     deactivate CMOrig
 deactivate Ctrl
 
-Ctrl -> Ctrl : consultarUbicacionesGPS()
+' Fase de recolección de datos previos antes de consumir el GPS Tracker e incluir Nro de Precinto
+Ctrl -> Ctrl : obtenerDatosParaLocalizacionYFiltro()
 activate Ctrl
-    Ctrl -> GPS : *getBolsinLocation(apiKey, bolsinId, cmOrigen)
-    activate GPS
-    deactivate GPS
+    Ctrl -> CMOrig : getApiKey()
+    activate CMOrig
+    deactivate CMOrig
+    
+    Ctrl -> CMOrig : getNroCM()
+    activate CMOrig
+    deactivate CMOrig
+    
+    loop [Para cada bolsín enviado detectado]
+        Ctrl -> BolsinAux : getIdBolsin()
+        activate BolsinAux
+        deactivate BolsinAux
+        
+        Ctrl -> BolsinAux : getNroPrecinto()
+        activate BolsinAux
+            BolsinAux -> Precinto : getNroPrecinto()
+            activate Precinto
+            deactivate Precinto
+        deactivate BolsinAux
+    end
 deactivate Ctrl
 
+' Consulta al GPS a través de clase Frontera (Desacoplado)
+Ctrl -> Ctrl : consultarUbicacionesGPS()
+activate Ctrl
+    Ctrl -> AdaptadorGPS : consultarLocalizacion()
+    activate AdaptadorGPS
+        AdaptadorGPS -> GPS : *getBolsinLocation()
+        activate GPS
+        deactivate GPS
+    deactivate AdaptadorGPS
+deactivate Ctrl
+
+' Generación del mapa a través de clase Frontera (Desacoplado)
 Ctrl -> Ctrl : generarMapa()
 activate Ctrl
-    Ctrl -> Maps : obtenerMapaConPosiciones(listaBolsinesFiltrados)
-    activate Maps
-    deactivate Maps
+    Ctrl -> AdaptadorMaps : solicitarRenderizadoMapa()
+    activate AdaptadorMaps
+        AdaptadorMaps -> Maps : obtenerMapaConPosiciones()
+        activate Maps
+        deactivate Maps
+    deactivate AdaptadorMaps
 deactivate Ctrl
 
 Ctrl -> UI : mostrarMapaYFiltros()
@@ -106,7 +159,7 @@ deactivate Ctrl
 
 EB -> UI : seleccionarBolsinDelMapa()
 
-UI -> Ctrl : tomarSeleccionBolsin(bolsinId)
+UI -> Ctrl : tomarSeleccionBolsin()
 activate Ctrl
 
 Ctrl -> Ctrl : validarEnvioCorreoGCM()
@@ -118,7 +171,7 @@ deactivate Ctrl
 
 EB -> UI : confirmarEnvioCorreo()
 
-UI -> Ctrl : procesarEnvioNotificacion(bolsinId)
+UI -> Ctrl : procesarEnvioNotificacion()
 activate Ctrl
 
 Ctrl -> Ctrl : obtenerComisionDestino()
@@ -127,11 +180,10 @@ activate Ctrl
     activate Bolsin
         Bolsin -> CMDest : obtenerCMDestino()
         activate CMDest
-          CMDest -> CMDest : getNombre()
-          activate CMDest
-          deactivate CMDest
+            CMDest -> CMDest : getNombre()
+            activate CMDest
+            deactivate CMDest
         deactivate CMDest
-        
     deactivate Bolsin
 deactivate Ctrl
 
@@ -140,7 +192,7 @@ activate Ctrl
     Ctrl -> CMDest : buscarEmailGCM()
     activate CMDest
         loop [BúsquedaEmails] [Mientras haya empleados]
-            CMDest -> EmpCorp : esTuCM(cmDestino)
+            CMDest -> EmpCorp : esTuCM()
             activate EmpCorp
             deactivate EmpCorp
             CMDest -> EmpCorp : sosGCM()
