@@ -1,105 +1,121 @@
-@startuml DiagramaClasesCU36
+@startuml DiagramaClasesSoporte
 skinparam classAttributeIconSize 0
+skinparam monochrome true
+skinparam shadowing false
 
-' --- Estilos base ---
-skinparam class {
-    BackgroundColor<<boundary>> #E8F8F5
-    BackgroundColor<<control>> #FEF9E7
-    BackgroundColor<<entity>> #FFFFFF
+' ==========================================
+' CLASES BOUNDARY Y CONTROL
+' ==========================================
+class PantSegBolsines <<Boundary>> {
+  - bolsinesLocalizados : List
+  - bolsinSeleccionado : Bolsin
+  - filtroNumeroPrecinto : String
+  - filtroCMDestino : String
+  - opcionSeleccionarBolsin : boolean
+  - opcionConfirmarEnvioMail : boolean
+  - opcionCancelar : boolean
+  + opConsultarUbicBolsines()
+  + habilitarVentana()
+  + mostrarNombreCM()
+  + mostrarLocalizacionBolsin()
+  + solicitarSeleccionBolsin()
+  + tomarSeleccionBolsin()
+  + mostrarOpEnviarMail()
+  + tomarConfirmacionEnvioMail()
+  + mostrarMensajeEnvioMail()
 }
 
-' --- Clases de Interfaz (Boundary) ---
-class PantSegBolsines <<boundary>> {
-    + habilitarVentana(): void
-    + mostrarNombreCM(nombre: String): void
-    + mostrarLocalizacionBolsin(): void
-    + solicitarSeleccionBolsin(): void
-    + tomarSeleccionBolsin(): void
-    + solicitarSeleccionMail(): void
-    + tomarSeleccionMail(): void
+class GestorSegBolsines <<Control>> {
+  - cmUsuarioLogueado : ComisionMedica
+  - bolsinesEnviados : List
+  - bolsinSeleccionado : Bolsin
+  - estadoEnviado : EstadoBolsin
+  - localizacionBolsines : List
+  - mailGerente : String
+  + buscarCMUsuarioLogueado()
+  + buscarBolsines()
+  + buscarDatosLocalizacionBolsines()
+  + tomarSeleccionBolsin()
+  + tomarConfirmacionEnvioMail()
+  + buscarMailGerente()
+  + enviarMailGerente()
+  + finCU()
 }
 
-class GPSTracker <<boundary>> {
-    + obtenerDatosLocalizacion(): List
+' ==========================================
+' ENTIDADES DE DOMINIO
+' ==========================================
+class Sesion <<Entity>> {
+  + buscarUsuarioLogueado()
 }
 
-class Mapa <<boundary>> {
-    + mostrarPosicionBolsines(): void
+class Usuario <<Entity>> {
+  - nombreUsuario : String
+  + obtenerEmpleado()
 }
 
-' --- Clases de Control ---
-class GestorSegBolsines <<control>> {
-    - codigoCM
-    - cmUusuarioLogueado
-    - buscarDatosLocalizacionBolsines
-    - nroPrecintoBolsin
-
-    + opConsultarUbicBolsines(): void
-    - buscarCMUsuarioLogueado(): void
-    - buscarEstadoBolsines(): void
-    - buscarDatosLocalizacionBolsines(): void
-    + tomarSeleccionBolsin(): void
-    - enviarMail(): void
-    + tomarSeleccionMail(): void
+class Empleado <<Entity>> {
+  - nombre : String
+  - apellido : String
+  + obtenerNombreCM()
+  + obtenerCodigoCM()
 }
 
-class CU31 <<control>> {
-    + llamarCUNotificacionMail(): void
+class Rol <<Entity>> {
+  - nombre : String
+  - mail : String
+  + sosGerente()
+  + obtenerMail()
 }
 
-' --- Clases de Entidad ---
-class Sesion <<entity>> {
-    + buscarUsuarioLogueado(): Usuario
+class ComisionMedica <<Entity>> {
+  - nombre : String
+  - codigo : String
+  + obtenerNombreCM()
+  + obtenerCodigoCM()
+  + esTuCMDestino()
+  + obtenerEmpleado()
 }
 
-class Usuario <<entity>> {
-    + obtenerEmpleado(): Empleado
+class Bolsin <<Entity>> {
+  - numeroPrecinto : int
+  + buscarBolsinesEnEstadoEnviado()
+  + esTuCMDeOrigen()
+  + obtenerNumeroPrecinto()
+  + obtenerCMDestino()
 }
 
-class Empleado <<entity>> {
-    + obtenerNombreCM(): String
-    + obtenerCodigoCM(): String
+class CambioDeEstadoBolsin <<Entity>> {
+  - fechaHoraInicio : Date
+  - fechaHoraFin : Date
+  + sosActual()
 }
 
-class ComisionMedica <<entity>> {
-    + obtenerNombreCM(): String
-    + obtenerCodigoCM(): String
+class EstadoBolsin <<Entity>> {
+  - nombre : String
+  + sosEnviado()
 }
 
-' Entidades con color personalizado
-class Bolsin <<entity>> #FFD1DC {
-    + buscarBolsinesEnEstadoEnviado(): List<Bolsin>
-    + esTuCMDeOrigen(cm: ComisionMedica): boolean
-    + obtenerNumeroPrecinto(): String
-}
+' ==========================================
+' RELACIONES
+' ==========================================
 
-class CambioDeEstadoBolsin <<entity>> #FFD1DC {
-    + esActual(): boolean
-}
+' Relaciones Pantalla - Gestor (Conocimiento mutuo, flechas punteadas)
+PantSegBolsines <..> GestorSegBolsines
 
-class EstadoBolsin <<entity>> {
-    + sosEnviado(): boolean
-}
+' Relaciones Gestor - Entidades (Conoce a las que llama directamente por flechas punteadas)
+GestorSegBolsines ..> Sesion
+GestorSegBolsines ..> Bolsin
 
-' --- Relaciones / Asociaciones ---
-
-' Relaciones de la capa de presentación y control
-PantSegBolsines --> GestorSegBolsines : delega
-GestorSegBolsines --> PantSegBolsines : actualiza
-GestorSegBolsines --> GPSTracker : solicita datos
-GPSTracker --> Mapa : envía coordenadas
-GestorSegBolsines --> CU31 : incluye (include)
-
-' Relaciones del Gestor con las entidades (Navegabilidad desde el Controlador)
-GestorSegBolsines --> Sesion : consulta
-GestorSegBolsines --> Bolsin : consulta/filtra
-
-' Relaciones estructurales entre entidades
-Sesion --> Usuario : tiene >
-Usuario --> Empleado : es >
-Empleado --> ComisionMedica : pertenece a >
-
-Bolsin "1" *-- "1..*" CambioDeEstadoBolsin : registra >
-CambioDeEstadoBolsin "1..*" --> "1" EstadoBolsin : conoce >
+' Relaciones de Dominio (Como el Modelo de Dominio Clásico - Flechas sólidas)
+Sesion --> "1" Usuario
+Usuario --> "1" Empleado
+Empleado "*" --> "1" ComisionMedica : pertenece a
+Empleado "*" --> "1" Rol : asume
+ComisionMedica "1" --> "*" Empleado : tiene
+Bolsin "*" --> "1" ComisionMedica : origen
+Bolsin "*" --> "1" ComisionMedica : destino
+Bolsin "1" --> "*" CambioDeEstadoBolsin : registra
+CambioDeEstadoBolsin "*" --> "1" EstadoBolsin : corresponde a
 
 @enduml

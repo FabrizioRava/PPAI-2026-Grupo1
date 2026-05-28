@@ -38,7 +38,9 @@ entity "L:Empleado" as E
 entity ":Bolsin" as B #FFD1DC
 entity "S:Bolsin" as Bs 
 entity ":Comision Medica" as CM
+entity ":Empleado" as Em #FFD1DC
 entity "S:Comision Medica" as CMs
+entity ":Rol" as R 
 entity ":CambioDeEstadoBolsin" as cEstB #FFD1DC
 
 entity "A:CambioDeEstadoBolsin" as estAB
@@ -47,9 +49,6 @@ entity "A:EstadoBolsin" as estB
 ' interfaz clase fabricacion pura
 boundary "GPS Tracker" as GPS 
 actor "Mapa" as Map
-entity ":Empleado" as Em #FFD1DC
-entity ":Rol" as R 
-
 participant "CU31" as CU31
 
 
@@ -62,7 +61,7 @@ P-> G: opConsultarUbicBolsines()
 
 ' 2. Sistema: busca y muestra la CM del usuario logueado.
 G-> G: buscarCMUsuarioLogueado()
-G -> S: buscarUsuarioLogueado
+G -> S: buscarCMUsuarioLogueado
 S-> U: obtenerEmpleado()
 U-> E: obtenerNombreCM()
 E -> CM: obtenerNombreCM()
@@ -91,6 +90,8 @@ GPS-> Map: obtenerDatosLocalizacion()
 G-> P: mostrarLocalizacionBolsin()
 
 
+
+
 ' 7. EB: selecciona un bolsín del mapa.
 G->P: solicitarSeleccionBolsin()
 EB-> P: tomarSeleccionBolsin()
@@ -103,16 +104,16 @@ G->P: mostrarOpEnviarMail()
 ' 9. EB: confirma el envío del correo electrónico.
 EB-> P: tomarConfirmacionEnvioMail()
 P-> G: tomarConfirmacionEnvioMail()
+G-> B: obtenerCMDestino()
 
 ' 10. Sistema: busca la dirección de correo electrónico del GCM destino.
 G->G: buscarMailGerente()
-G-> Bs: obtenerCMDestino()
-Bs-> CMs: esTuCMDestino()
 
 group Empleados CM Destino [mientras haya empleados]
-    CMs-> Em: obtenerEmpleado()
-    Em-> R: sosGerente()
-    Em-> R: obtenerMail()
+    G-> Em: obtenerEmpleado()
+    Em -> CMs: esTuCM()
+    Em -> R: sosGerente()
+    Em-> Em: obtenerMail()
 end
 
 G-> G: enviarMailGerente()
@@ -122,15 +123,5 @@ G-> P: mostrarMensajeEnvioMail()
 G -[#blue,dashed]-> CU31: <<include>> llamarCUNotificacionBolsin()
 G->G: finCU()
 
-
-' un par de cosas, si aplicas patron experto en la parte de la consulta de si es actu' le pregunte a su estado actual A:Cambior' el bolsin tiene que preguntar a su cambio estado si es actual para trigge
-
-'no lo hace ya?
-
 @end
 
-
-'por mi parte no se me ocurre que mas cambiar
-
-
-'lo subo al github?
