@@ -17,7 +17,7 @@ class PantSegBolsines <<Boundary>> {
   + opConsultarUbicBolsines()
   + habilitarVentana()
   + mostrarNombreCM()
-  + mostrarLocalizacionBolsin()
+  + mostrarUbicacionMapa()
   + solicitarSeleccionBolsin()
   + tomarSeleccionBolsin()
   + mostrarOpEnviarMail()
@@ -32,25 +32,38 @@ class GestorSegBolsines <<Control>> {
   - estadoEnviado : EstadoBolsin
   - localizacionBolsines : List
   - mailGerente : String
+  + opcionConsultarUbicBolsines()
   + buscarCMUsuarioLogueado()
   + buscarBolsines()
   + buscarDatosLocalizacionBolsines()
   + tomarSeleccionBolsin()
   + tomarConfirmacionEnvioMail()
+  + obtenerCMDestino()
   + buscarMailGerente()
   + enviarMailGerente()
   + finCU()
+}
+
+class GPSTracker <<Boundary>> {
+  +obtenerDatosLocalizacion()
+}
+
+class GoogleMaps <<Boundary>> {
+  +obtenerUbicacionMapa()
 }
 
 ' ==========================================
 ' ENTIDADES DE DOMINIO
 ' ==========================================
 class Sesion <<Entity>> {
-  + buscarUsuarioLogueado()
+  - fechaHoraInicio : Date
+  - fechaHoraFin : Date
+  + buscarCMUsuarioLogueado()
 }
 
 class Usuario <<Entity>> {
   - nombreUsuario : String
+  - contraseña : String
   + obtenerEmpleado()
 }
 
@@ -58,14 +71,14 @@ class Empleado <<Entity>> {
   - nombre : String
   - apellido : String
   + obtenerNombreCM()
-  + obtenerCodigoCM()
+  + esGerente()
+  + obetenerMail()
 }
 
 class Rol <<Entity>> {
   - nombre : String
   - mail : String
-  + sosGerente()
-  + obtenerMail()
+  + esGerente()
 }
 
 class ComisionMedica <<Entity>> {
@@ -73,8 +86,7 @@ class ComisionMedica <<Entity>> {
   - codigo : String
   + obtenerNombreCM()
   + obtenerCodigoCM()
-  + esTuCMDestino()
-  + obtenerEmpleado()
+  + esTuCM()
 }
 
 class Bolsin <<Entity>> {
@@ -89,6 +101,7 @@ class CambioDeEstadoBolsin <<Entity>> {
   - fechaHoraInicio : Date
   - fechaHoraFin : Date
   + sosActual()
+  + sosEnviado()
 }
 
 class EstadoBolsin <<Entity>> {
@@ -106,6 +119,8 @@ PantSegBolsines <..> GestorSegBolsines
 ' Relaciones Gestor - Entidades (Conoce a las que llama directamente por flechas punteadas)
 GestorSegBolsines ..> Sesion
 GestorSegBolsines ..> Bolsin
+GestorSegBolsines ..> GPSTracker
+GestorSegBolsines ..> GoogleMaps
 
 ' Relaciones de Dominio (Como el Modelo de Dominio Clásico - Flechas sólidas)
 Sesion --> "1" Usuario
