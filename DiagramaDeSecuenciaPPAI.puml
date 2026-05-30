@@ -1,4 +1,5 @@
-@startuml
+
+@startuml PPAI
 autonumber "<b>00-"
 skinparam style strictuml
 skinparam ranking as actores
@@ -34,7 +35,7 @@ entity "activa:Sesion" as Sesion <<entity>>
 entity "logueado:Usuario" as User <<entity>>
 entity "logueado:Empleado" as EmpLog <<entity>>
 entity ":ComisionMedica" as CMOrig <<entity>>
-entity ":Bolsin"s as BolsinAux <<entity>>
+entity ":Bolsin" as BolsinAux <<entity>>
 entity "actual:CambioEstadoBolsin" as CambioEstado <<entity>>
 entity "actual:Estado" as Estado <<entity>>
 entity "P:Precinto" as Precinto <<entity>>

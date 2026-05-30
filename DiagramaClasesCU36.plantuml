@@ -1,0 +1,121 @@
+@startuml DiagramaClasesSoporte
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+skinparam shadowing false
+
+' ==========================================
+' CLASES BOUNDARY Y CONTROL
+' ==========================================
+class PantSegBolsines <<Boundary>> {
+  - bolsinesLocalizados : List
+  - bolsinSeleccionado : Bolsin
+  - filtroNumeroPrecinto : String
+  - filtroCMDestino : String
+  - opcionSeleccionarBolsin : boolean
+  - opcionConfirmarEnvioMail : boolean
+  - opcionCancelar : boolean
+  + opConsultarUbicBolsines()
+  + habilitarVentana()
+  + mostrarNombreCM()
+  + mostrarLocalizacionBolsin()
+  + solicitarSeleccionBolsin()
+  + tomarSeleccionBolsin()
+  + mostrarOpEnviarMail()
+  + tomarConfirmacionEnvioMail()
+  + mostrarMensajeEnvioMail()
+}
+
+class GestorSegBolsines <<Control>> {
+  - cmUsuarioLogueado : ComisionMedica
+  - bolsinesEnviados : List
+  - bolsinSeleccionado : Bolsin
+  - estadoEnviado : EstadoBolsin
+  - localizacionBolsines : List
+  - mailGerente : String
+  + buscarCMUsuarioLogueado()
+  + buscarBolsines()
+  + buscarDatosLocalizacionBolsines()
+  + tomarSeleccionBolsin()
+  + tomarConfirmacionEnvioMail()
+  + buscarMailGerente()
+  + enviarMailGerente()
+  + finCU()
+}
+
+' ==========================================
+' ENTIDADES DE DOMINIO
+' ==========================================
+class Sesion <<Entity>> {
+  + buscarUsuarioLogueado()
+}
+
+class Usuario <<Entity>> {
+  - nombreUsuario : String
+  + obtenerEmpleado()
+}
+
+class Empleado <<Entity>> {
+  - nombre : String
+  - apellido : String
+  + obtenerNombreCM()
+  + obtenerCodigoCM()
+}
+
+class Rol <<Entity>> {
+  - nombre : String
+  - mail : String
+  + sosGerente()
+  + obtenerMail()
+}
+
+class ComisionMedica <<Entity>> {
+  - nombre : String
+  - codigo : String
+  + obtenerNombreCM()
+  + obtenerCodigoCM()
+  + esTuCMDestino()
+  + obtenerEmpleado()
+}
+
+class Bolsin <<Entity>> {
+  - numeroPrecinto : int
+  + buscarBolsinesEnEstadoEnviado()
+  + esTuCMDeOrigen()
+  + obtenerNumeroPrecinto()
+  + obtenerCMDestino()
+}
+
+class CambioDeEstadoBolsin <<Entity>> {
+  - fechaHoraInicio : Date
+  - fechaHoraFin : Date
+  + sosActual()
+}
+
+class EstadoBolsin <<Entity>> {
+  - nombre : String
+  + sosEnviado()
+}
+
+' ==========================================
+' RELACIONES
+' ==========================================
+
+' Relaciones Pantalla - Gestor (Conocimiento mutuo, flechas punteadas)
+PantSegBolsines <..> GestorSegBolsines
+
+' Relaciones Gestor - Entidades (Conoce a las que llama directamente por flechas punteadas)
+GestorSegBolsines ..> Sesion
+GestorSegBolsines ..> Bolsin
+
+' Relaciones de Dominio (Como el Modelo de Dominio Clásico - Flechas sólidas)
+Sesion --> "1" Usuario
+Usuario --> "1" Empleado
+Empleado "*" --> "1" ComisionMedica : pertenece a
+Empleado "*" --> "1" Rol : asume
+ComisionMedica "1" --> "*" Empleado : tiene
+Bolsin "*" --> "1" ComisionMedica : origen
+Bolsin "*" --> "1" ComisionMedica : destino
+Bolsin "1" --> "*" CambioDeEstadoBolsin : registra
+CambioDeEstadoBolsin "*" --> "1" EstadoBolsin : corresponde a
+
+@enduml
