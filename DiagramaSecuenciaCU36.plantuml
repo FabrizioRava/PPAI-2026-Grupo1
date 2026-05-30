@@ -38,9 +38,8 @@ entity "G:Empleado" as GE
 
 entity ":Bolsin" as B #FFD1DC
 entity "S:Bolsin" as Bs 
-entity ":Comision Medica" as CM
 entity ":Empleado" as Em #FFD1DC
-entity "S:Comision Medica" as CMs
+entity ":Comision Medica" as CM
 entity ":Rol" as R 
 entity ":CambioDeEstadoBolsin" as cEstB #FFD1DC
 
@@ -49,6 +48,7 @@ entity "A:EstadoBolsin" as estB
 
 ' interfaz clase fabricacion pura
 boundary "GPS Tracker" as GPS
+actor "GPS Tracker" as GpAc
 boundary "GoogleMaps" as BGMap
 actor "GoogleMaps" as GMap
 participant "CU31" as CU31
@@ -74,23 +74,27 @@ G-> P: mostrarNombreCM()
 G-> G: buscarBolsines()
 group Bolsines en estado Enviado [mientras haya bolsines]
     G -> B: buscarBolsinesEnEstadoEnviado()
-    B -> cEstB: sosActual()
+    B -> cEstB: sosActual()*
     B -> estAB: sosEnviado()
     estAB-> estB: sosEnviado()
+    B-> estAB: obtenerFechaHoraInicio()
+
     G-> B: esTuCMDeOrigen()
     G-> B: obtenerNumeroPrecinto()
+    G-> B: obtenerNumeroBolsin()
 end
 
 ' 4. Sistema: solicita al dispositivo GPS Tracker los datos de localización de los bolsines.
 ' 5. Sistema: recibe del dispositivo GPS Tracker los datos de localización de cada uno de esos bolsines
-G-> G: buscarDatosLocalizacionBolsines()
-G-> GPS: obtenerDatosLocalizacion()
+G-> G: buscarDatosLocalizacionBolsin()
+G-> GPS: obtenerDatosLocalizacionBolsin()
+GPS-> GpAc: obtenerDatosLocalizacionBolsin()
 
 ' 6. Sistema: muestra sobre un mapa la posición de los bolsines, habilitando la opción de seleccionar un bolsín del
 ' mapa o filtrar por número de precinto o CM destino.
-G -> BGMap: obtenerUbicacionMapa()
-BGMap -> GMap: obtenerUbicacionMapa()
-G-> P: mostrarUbicacionMapa()
+G -> BGMap: obtenerUbicacionBolsin()
+BGMap -> GMap: obtenerUbicacionBolsin()
+G-> P: mostrarUbicacionBolsin()
 
 
 ' 7. EB: selecciona un bolsín del mapa.
@@ -111,9 +115,9 @@ G-> Bs: obtenerCMDestino()
 ' 10. Sistema: busca la dirección de correo electrónico del GCM destino.
 G->G: buscarMailGerente()
 
-group Empleados CM Destino [mientras haya empleados]
-    G-> Em: esGerente()
-    Em -> CMs: esTuCM()
+group Empleados CM Destino [mientras haya empleados y no se encuentre el gerente del CM destino]
+    G-> Em: esGerenteCMDestino()
+    Em -> CM: esTuCM()
     Em -> R: esGerente()
 end
 
