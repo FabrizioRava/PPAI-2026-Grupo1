@@ -3,7 +3,7 @@ autonumber "<b>00-"
 skinparam style strictuml
 skinparam ranking as actores
 
-' Configuración de colores basados en la foto de los profesores (Celeste: #C5EBEF, Naranja: #FF5B00)
+
 skinparam sequence {
     LifeLineBackgroundColor #C5EBEF
     LifeLineBorderColor #333333
@@ -16,7 +16,7 @@ skinparam sequence {
     ActorBorderColor #D79B00
 }
 
-' Colores específicos para los estereotipos y entidades según la imagen
+
 skinparam entityBackgroundColor #C5EBEF
 skinparam entityBorderColor #333333
 skinparam controlBackgroundColor #C5EBEF
@@ -38,7 +38,7 @@ entity "<b><u>L:Usuario" as U
 entity "<b><u>L:Empleado" as E
 entity "<b><u>G:Empleado" as GE
 
-' Resaltados en Naranja según la foto de la cátedra
+
 entity "<b><u>:Bolsin" as B #FF5B00
 entity "<b><u>S:Bolsin" as Bs 
 entity "<b><u>:Empleado" as Em #FF5B00
@@ -83,27 +83,21 @@ deactivate G
 
 G -> P: mostrarNombreCM()
 
-' 3. Sistema: buscarBolsinesEnEstadoEnviado() [Adaptado del diagrama de referencia]
+' 3. Sistema: buscarBolsinesEnEstadoEnviado() 
 G -> G ++ : buscarBolsinesEnEstadoEnviado()
 deactivate G
     group Bolsines en estado Enviado [mientras haya bolsines]
-        ' Se adaptó la llamada a B para usar sosEnviado() con su cuadradito compacto naranja
         G -> B ++ #FF5B00: sosEnviado()
-            ' cEstB es naranja, su activación debe ser naranja
             B -> cEstB ++ #FF5B00: sosActual()
             deactivate cEstB
-            ' estAB es celeste
             B -> estAB ++: sosEnviado()
-                ' estB es celeste
                 estAB -> estB ++: sosEnviado()
                 deactivate estB
             deactivate estAB
-            ' estAB es celeste
             B -> estAB ++: obtenerFechaHoraInicio()
             deactivate estAB
         deactivate B
 
-        ' Las llamadas a B (naranja) deben tener activaciones naranjas y ser cuadradas
         G -> B ++ #FF5B00: esTuCMDeOrigen()
         deactivate B
         G -> B ++ #FF5B00: obtenerNumeroPrecinto()
@@ -165,12 +159,9 @@ deactivate G
 G -> G ++: buscarMailGerente()
 deactivate G
     group Empleados CM Destino [mientras haya empleados y no se encuentre el gerente del CM destino]
-        ' Em es naranja, activación debe ser naranja
         G -> Em ++ #FF5B00: esTuCM()
         deactivate Em
-        ' Em es naranja, activación debe ser naranja
         G -> Em ++ #FF5B00: esGerenteCMDestino()
-            ' R es celeste
             Em -> R ++: esGerente()
             deactivate R
         deactivate Em
@@ -183,7 +174,6 @@ G -> G: enviarMailGerente()
 activate G
 deactivate G
 
-' 11. Sistema: Flecha normal continua para la llamada al caso de uso incluido
 G -> CU31: «include» llamarCUNotificacionBolsin()
 activate CU31
 deactivate CU31
