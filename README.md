@@ -15,6 +15,6 @@ Como reprsentar llamado a CU
 
 5. Cambio de grupo disenio apertura disenio
 
-6. Boundary GPS Tracker
+6. Boundary GPS Tracker en diagrama de clases
 
-7. Clase Dispositivo GPS: En loop buscar bolsines enviados traer de cada bolsin modelo de dispositivo y codigo de cm destino.
+7. Nueva clase DispositivoGPS: En loop buscar bolsines enviados traer de cada bolsin modelo de dispositivo y codigo de cm destino.
