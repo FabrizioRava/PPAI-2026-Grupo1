@@ -14,3 +14,7 @@ Si tienen que se renviados al CU31
 Como reprsentar llamado a CU
 
 5. Cambio de grupo disenio apertura disenio
+
+6. Boundary GPS Tracker
+
+7. Clase Dispositivo GPS: En loop buscar bolsines enviados traer de cada bolsin modelo de dispositivo y codigo de cm destino.
