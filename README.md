@@ -18,3 +18,5 @@ Como reprsentar llamado a CU
 6. Boundary GPS Tracker en diagrama de clases
 
 7. Nueva clase DispositivoGPS: En loop buscar bolsines enviados traer de cada bolsin modelo de dispositivo y codigo de cm destino.
+8. Metodo de obtenerMapa dentro del loop de obtener ubicacion.
+
