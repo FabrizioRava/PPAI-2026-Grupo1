@@ -8,16 +8,20 @@ skinparam shadowing false
 ' ==========================================
 class PantSegBolsines <<Boundary>> {
   - bolsinesLocalizados : List
-  - bolsinSeleccionado : Bolsin
+  - bolsines : List
+  - lblBolsinSeleccionado : String
   - filtroNumeroPrecinto : String
   - filtroCMDestino : String
   - opcionSeleccionarBolsin : boolean
   - opcionConfirmarEnvioMail : boolean
   - opcionCancelar : boolean
+  - ubicacionBolsin : String
+  - nombreCM : String
+
   + opConsultarUbicBolsines()
   + habilitarVentana()
   + mostrarNombreCM()
-  + mostrarLocalizacionBolsin()
+  + mostrarUbicacionBolsin()
   + solicitarSeleccionBolsin()
   + tomarSeleccionBolsin()
   + mostrarOpEnviarMail()
@@ -28,71 +32,108 @@ class PantSegBolsines <<Boundary>> {
 class GestorSegBolsines <<Control>> {
   - cmUsuarioLogueado : ComisionMedica
   - bolsinesEnviados : List
-  - bolsinSeleccionado : Bolsin
-  - estadoEnviado : EstadoBolsin
-  - localizacionBolsines : List
+  - bolsinSeleccionado : String
+  - cmUsuarioLogueado : String
+  - localizacionBolsin : String
+  - cmDestino : String
   - mailGerente : String
+
+  + opcionConsultarUbicBolsines()
   + buscarCMUsuarioLogueado()
-  + buscarBolsines()
-  + buscarDatosLocalizacionBolsines()
+  + buscarBolsinesEnEstadoEnviado()
+  + buscarDatosLocalizacionBolsin()
   + tomarSeleccionBolsin()
   + tomarConfirmacionEnvioMail()
+  + obtenerCMDestino()
   + buscarMailGerente()
   + enviarMailGerente()
   + finCU()
+}
+
+class GPSTracker <<Boundary>> {
+  - datosLocalizacionBolsin
+
+  + obtenerDatosLocalizacion()
+}
+
+class GoogleMaps <<Boundary>> {
+  - ubicacionMapaBolsin
+
+  + obtenerUbicacionBolsin()
 }
 
 ' ==========================================
 ' ENTIDADES DE DOMINIO
 ' ==========================================
 class Sesion <<Entity>> {
-  + buscarUsuarioLogueado()
+  - fechaHoraInicio : Date
+  - fechaHoraFin : Date
+  - cmUsuarioLogueado : String
+
+  + buscarCMUsuarioLogueado()
 }
 
 class Usuario <<Entity>> {
   - nombreUsuario : String
+  - contraseña : String
+
   + obtenerEmpleado()
 }
 
 class Empleado <<Entity>> {
   - nombre : String
   - apellido : String
+  - mailGerente : String
+  - nombreCM : String
+
+  + esTuCM()
   + obtenerNombreCM()
-  + obtenerCodigoCM()
+  + esGerenteCMDestino()
+  + obtenerMail()
 }
 
 class Rol <<Entity>> {
   - nombre : String
   - mail : String
-  + sosGerente()
-  + obtenerMail()
+
+  + esGerente()
 }
 
 class ComisionMedica <<Entity>> {
   - nombre : String
   - codigo : String
+
   + obtenerNombreCM()
   + obtenerCodigoCM()
-  + esTuCMDestino()
-  + obtenerEmpleado()
 }
 
 class Bolsin <<Entity>> {
   - numeroPrecinto : int
-  + buscarBolsinesEnEstadoEnviado()
+  - numeroBolsin : int
+  - bolsinesEnviados : List
+  - cmDestino : String
+
+  + sosEnviado()
   + esTuCMDeOrigen()
   + obtenerNumeroPrecinto()
+  + obtenerNumeroBolsin()
   + obtenerCMDestino()
+  + obtenerDatosLocalizacionBolsin()
 }
 
 class CambioDeEstadoBolsin <<Entity>> {
   - fechaHoraInicio : Date
   - fechaHoraFin : Date
+
+  + obtenerFechaHoraInicio()
   + sosActual()
+  + sosEnviado()
 }
 
 class EstadoBolsin <<Entity>> {
   - nombre : String
+  - descripcion : String
+
   + sosEnviado()
 }
 
@@ -106,16 +147,18 @@ PantSegBolsines <..> GestorSegBolsines
 ' Relaciones Gestor - Entidades (Conoce a las que llama directamente por flechas punteadas)
 GestorSegBolsines ..> Sesion
 GestorSegBolsines ..> Bolsin
+Bolsin ..> GPSTracker
+GestorSegBolsines ..> GoogleMaps
+GestorSegBolsines ..> Empleado
 
 ' Relaciones de Dominio (Como el Modelo de Dominio Clásico - Flechas sólidas)
-Sesion --> "1" Usuario
-Usuario --> "1" Empleado
-Empleado "*" --> "1" ComisionMedica : pertenece a
-Empleado "*" --> "1" Rol : asume
-ComisionMedica "1" --> "*" Empleado : tiene
-Bolsin "*" --> "1" ComisionMedica : origen
-Bolsin "*" --> "1" ComisionMedica : destino
-Bolsin "1" --> "*" CambioDeEstadoBolsin : registra
-CambioDeEstadoBolsin "*" --> "1" EstadoBolsin : corresponde a
+Sesion --> "1 " Usuario : usuario
+Usuario --> "1 " Empleado : empleado
+Empleado  --> "1    " ComisionMedica : comision medica
+Empleado  --> "1  " Rol : rol
+Bolsin  --> "1 " ComisionMedica : cm origen
+Bolsin  --> "1 " ComisionMedica : cm destino
+Bolsin  --> "1...*      " CambioDeEstadoBolsin : cambio de estado bolsin
+CambioDeEstadoBolsin --> "1 " EstadoBolsin : estado bolsin
 
 @enduml
