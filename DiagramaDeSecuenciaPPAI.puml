@@ -3,7 +3,6 @@ autonumber "<b>00-"
 skinparam style strictuml
 skinparam ranking as actores
 
-
 skinparam sequence {
     LifeLineBackgroundColor #C5EBEF
     LifeLineBorderColor #333333
@@ -15,7 +14,6 @@ skinparam sequence {
     ActorBackgroundColor #FFE6CC
     ActorBorderColor #D79B00
 }
-
 
 skinparam entityBackgroundColor #C5EBEF
 skinparam entityBorderColor #333333
@@ -38,25 +36,20 @@ entity "<b><u>L:Usuario" as U
 entity "<b><u>L:Empleado" as E
 entity "<b><u>G:Empleado" as GE
 
-
 entity "<b><u>:Bolsin" as B #FF5B00
-entity "<b><u>S:Bolsin" as Bs 
+entity "<b><u>:DispositivoGPS" as DGPS #C5EBEF
 entity "<b><u>:Empleado" as Em #FF5B00
 entity "<b><u>:Comision Medica" as CM
 entity "<b><u>:Rol" as R 
 entity "<b><u>:CambioDeEstadoBolsin" as cEstB #FF5B00
-
-entity "<b><u>A:CambioDeEstadoBolsin" as estAB
 entity "<b><u>A:EstadoBolsin" as estB
 
-' Interfaz clase fabricación pura
-boundary "<b><u>GPS Tracker" as GPS
+boundary "<b><u>InterfazGPSTracker" as GPS
 actor "<b><u>GPS Tracker" as GpAc
-boundary "<b><u>GoogleMaps" as BGMap
+boundary "<b><u>InterfazGoogleMaps" as BGMap
 actor "<b><u>GoogleMaps" as GMap
 participant "<b><u>CU31" as CU31 <<usecase>>
 
-' 1. EB: opConsultarUbicBolsines()
 EB -> P: opConsultarUbicBolsines()
 activate P
 
@@ -67,7 +60,6 @@ deactivate P
 P -> G: opConsultarUbicBolsines() 
 activate G
 
-' 2. Sistema: buscarCMUsuarioLogueado()
 G -> G ++ : buscarCMUsuarioLogueado()
 deactivate G
     G -> S ++ : buscarCMUsuarioLogueado()
@@ -83,19 +75,17 @@ deactivate G
 
 G -> P: mostrarNombreCM()
 
-' 3. Sistema: buscarBolsinesEnEstadoEnviado() 
 G -> G ++ : buscarBolsinesEnEstadoEnviado()
 deactivate G
     group Bolsines en estado Enviado [mientras haya bolsines]
         G -> B ++ #FF5B00: sosEnviado()
             B -> cEstB ++ #FF5B00: sosActual()
             deactivate cEstB
-            B -> estAB ++: sosEnviado()
-                estAB -> estB ++: sosEnviado()
+            B -> cEstB ++ #FF5B00: sosEnviado()
+                cEstB -> estB ++: sosEnviado()
                 deactivate estB
-            deactivate estAB
-            B -> estAB ++: obtenerFechaHoraInicio()
-            deactivate estAB
+            deactivate cEstB
+            deactivate cEstB
         deactivate B
 
         G -> B ++ #FF5B00: esTuCMDeOrigen()
@@ -104,58 +94,60 @@ deactivate G
         deactivate B
         G -> B ++ #FF5B00: obtenerNumeroBolsin()
         deactivate B
+        
+        G -> B ++ #FF5B00: obtenerCMDestino()
+            B -> CM ++: obtenerCodigoCM()
+            deactivate CM
+            B -> CM ++: obtenerNombreCM()
+            deactivate CM
+        deactivate B
+        
+        G -> B ++ #FF5B00: obtenerDispositivoGPS()
+            B -> DGPS ++ #C5EBEF: obtenerMarcaGPS()
+            deactivate DGPS
+            B -> DGPS ++ #C5EBEF: obtenerModeloGPS()
+            deactivate DGPS
+        deactivate B
     end
 
-' 4. Sistema: solicitar...
-' 5. Sistema: recibe del dispositivo GPS Tracker...
-G -> G ++ : buscarDatosLocalizacionBolsin()
+G -> G ++ : buscarUbicacionBolsines()
 deactivate G
     group Bolsines en estado Enviado [mientras haya bolsines enviados]
-        G -> B ++ #FF5B00: obtenerDatosLocalizacionBolsin()
-            B -> GPS ++: obtenerDatosLocalizacionBolsin()
-                GPS -> GpAc ++: obtenerDatosLocalizacionBolsin()
-                deactivate GpAc
-            deactivate GPS
-        deactivate B
-        G -> BGMap ++: obtenerUbicacionBolsin()
-            BGMap -> GMap ++: obtenerUbicacionBolsin()
-            deactivate GMap
-        deactivate BGMap
+        G -> GPS ++: obtenerUbicacionBolsin()
+            GPS -> GpAc ++: getBolsinLocation()
+            deactivate GpAc
+        deactivate GPS
     end
 
-' 6. Sistema: mostrarUbicacionBolsines()
-G -> P: mostrarUbicacionBolsines()
+G -> G ++ : obtenerMapaBolsines()
+deactivate G
+G -> BGMap ++: obtenerMapaBolsines()
+    BGMap -> GMap ++: obtenerMapaBolsines()
+    deactivate GMap
+deactivate BGMap
 
-' 7. EB: solicitarSeleccionBolsin()
+G -> P: mostrarMapaBolsines()
+
 G -> P: solicitarSeleccionBolsin()
 deactivate G
 deactivate P
 
-' El sistema se apaga acá esperando la interacción del usuario
 EB -> P: tomarSeleccionBolsin()
 activate P
 
 P -> G: tomarSeleccionBolsin()
 activate G
 
-' 8. Sistema: mostrarOpEnviarMail()
 G -> P: mostrarOpEnviarMail()
 deactivate G
 deactivate P
 
-' El sistema se vuelve a apagar esperando que el usuario confirme en la pantalla
 EB -> P: tomarConfirmacionEnvioMail()
 activate P
 
 P -> G: tomarConfirmacionEnvioMail()
 activate G
 
-G -> G ++: obtenerCMDestino()
-deactivate G
-    G -> Bs ++: obtenerCMDestino()
-    deactivate Bs
-
-' 10. Sistema: buscarMailGerente()
 G -> G ++: buscarMailGerente()
 deactivate G
     group Empleados CM Destino [mientras haya empleados y no se encuentre el gerente del CM destino]
