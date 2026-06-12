@@ -65,9 +65,9 @@ deactivate G
     G -> S ++ : buscarCMUsuarioLogueado()
         S -> U ++ : obtenerEmpleado()
             U -> E ++ : obtenerCodigoCM()
-                E -> CM ++ : obtenerNombreCM()
+                E -> CM ++ : getNombreCM()
                 deactivate CM
-                E -> CM ++ : obtenerCodigoCM()
+                E -> CM ++ : getCodigoCM()
                 deactivate CM
             deactivate E
         deactivate U
@@ -90,22 +90,22 @@ deactivate G
 
         G -> B ++ #FF5B00: esTuCMDeOrigen()
         deactivate B
-        G -> B ++ #FF5B00: obtenerNumeroPrecinto()
+        G -> B ++ #FF5B00: getNumeroPrecinto()
         deactivate B
-        G -> B ++ #FF5B00: obtenerNumeroBolsin()
+        G -> B ++ #FF5B00: getNumeroBolsin()
         deactivate B
         
         G -> B ++ #FF5B00: obtenerCMDestino()
-            B -> CM ++: obtenerCodigoCM()
+            B -> CM ++: getCodigoCM()
             deactivate CM
-            B -> CM ++: obtenerNombreCM()
+            B -> CM ++: getNombreCM()
             deactivate CM
         deactivate B
         
         G -> B ++ #FF5B00: obtenerDispositivoGPS()
-            B -> DGPS ++ #C5EBEF: obtenerMarcaGPS()
+            B -> DGPS ++ #C5EBEF: getMarcaGPS()
             deactivate DGPS
-            B -> DGPS ++ #C5EBEF: obtenerModeloGPS()
+            B -> DGPS ++ #C5EBEF: getModeloGPS()
             deactivate DGPS
         deactivate B
     end
@@ -159,7 +159,7 @@ deactivate G
         deactivate Em
     end
 
-G -> GE ++: obtenerMail()
+G -> GE ++: getMail()
 deactivate GE
 
 G -> G: enviarMailGerente()
