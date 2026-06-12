@@ -85,8 +85,8 @@ class DispositivoGPS <<Entity>> {
   <font color="#8C2400">- marca : String</font>
   <font color="#8C2400">- modelo : String</font>
   --
-  <font color="#1B6629">+ obtenerMarcaGPS()</font>
-  <font color="#1B6629">+ obtenerModeloGPS()</font>
+  <font color="#1B6629">+ getMarcaGPS()</font>
+  <font color="#1B6629">+ getModeloGPS()</font>
 }
 
 class Sesion <<Entity>> {
@@ -112,10 +112,10 @@ class Empleado <<Entity>> {
   <font color="#8C2400">- codigoCM : String</font>
   --
   <font color="#1B6629">+ esTuCM()</font>
-  <font color="#1B6629">+ obtenerNombreCM()</font>
-  <font color="#1B6629">+ obtenerCodigoCM()</font>
+  <font color="#1B6629">+ getNombreCM()</font>
+  <font color="#1B6629">+ getCodigoCM()</font>
   <font color="#1B6629">+ esGerenteCMDestino()</font>
-  <font color="#1B6629">+ obtenerMail()</font>
+  <font color="#1B6629">+ getMail()</font>
 }
 
 class Rol <<Entity>> {
@@ -128,8 +128,8 @@ class ComisionMedica <<Entity>> {
   <font color="#8C2400">- nombre : String</font>
   <font color="#8C2400">- codigo : String</font>
   --
-  <font color="#1B6629">+ obtenerNombreCM()</font>
-  <font color="#1B6629">+ obtenerCodigoCM()</font>
+  <font color="#1B6629">+ getNombreCM()</font>
+  <font color="#1B6629">+ getCodigoCM()</font>
 }
 
 class Bolsin <<Entity>> {
@@ -138,8 +138,8 @@ class Bolsin <<Entity>> {
   --
   <font color="#1B6629">+ sosEnviado()</font>
   <font color="#1B6629">+ esTuCMDeOrigen()</font>
-  <font color="#1B6629">+ obtenerNumeroPrecinto()</font>
-  <font color="#1B6629">+ obtenerNumeroBolsin()</font>
+  <font color="#1B6629">+ getNumeroPrecinto()</font>
+  <font color="#1B6629">+ getNumeroBolsin()</font>
   <font color="#1B6629">+ obtenerCMDestino()</font>
   <font color="#1B6629">+ obtenerDispositivoGPS()</font>
 }
