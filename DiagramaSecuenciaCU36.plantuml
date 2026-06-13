@@ -37,6 +37,7 @@ entity "L:Empleado" as E
 entity "G:Empleado" as GE
 
 entity ":Bolsin" as B #FFD1DC
+entity ":DispositivoGPS" as Dgps
 entity "S:Bolsin" as Bs 
 entity ":Empleado" as Em #FFD1DC
 entity ":Comision Medica" as CM
@@ -65,9 +66,9 @@ P-> G: opConsultarUbicBolsines()
 G-> G: buscarCMUsuarioLogueado()
 G -> S: buscarCMUsuarioLogueado()
 S-> U: obtenerEmpleado()
-U-> E: obtenerNombreCM()
-E -> CM: obtenerNombreCM()
-E -> CM: obtenerCodigoCM()
+U-> E: obtenerCodigoCM() 
+E -> CM: getNombreCM()
+E -> CM: getCodigoCM()
 G-> P: mostrarNombreCM()
 
 ' 3. Sistema: busca los bolsines en estado Enviado cuya CM origen es igual a la CM del usuario logueado.
@@ -77,26 +78,32 @@ group Bolsines en estado Enviado [mientras haya bolsines]
     B -> cEstB: sosActual()*
     B -> estAB: sosEnviado()
     estAB-> estB: sosEnviado()
-    B-> estAB: obtenerFechaHoraInicio()
 
     G-> B: esTuCMDeOrigen()
-    G-> B: obtenerNumeroPrecinto()
-    G-> B: obtenerNumeroBolsin()
+    G-> B: getNumeroPrecinto()
+    G-> B: getNumeroBolsin()
+    G -> B: obtenerCMDestino()
+    B -> CM: getCodigoCM()
+    B -> CM: getNombreCM()
 end
 
 ' 4. Sistema: solicita al dispositivo GPS Tracker los datos de localización de los bolsines.
 ' 5. Sistema: recibe del dispositivo GPS Tracker los datos de localización de cada uno de esos bolsines
-G-> G: buscarDatosLocalizacionBolsin()
+G-> G: buscarUbicacionBolsines()
 group Bolsines en estado Enviado [mientras haya bolsines enviados]
-    G-> B: obtenerDatosLocalizacionBolsin()
-    B-> GPS: obtenerDatosLocalizacionBolsin()
-    GPS-> GpAc: obtenerDatosLocalizacionBolsin()
-    G -> BGMap: obtenerUbicacionBolsin()
-    BGMap -> GMap: obtenerUbicacionBolsin()
+    G -> B: obtenerDispositivoGPS()
+    B -> Dgps: getMarcaGPS()
+    B -> Dgps: getModeloGPS()
+    G-> B: obtenerUbicacionBolsin()
+    B-> GPS: obtenerUbicacionBolsin()
+    GPS-> GpAc: getUbicacionBolsin()
 end
 ' 6. Sistema: muestra sobre un mapa la posición de los bolsines, habilitando la opción de seleccionar un bolsín del
 ' mapa o filtrar por número de precinto o CM destino.
-G-> P: mostrarUbicacionBolsines()
+G -> G: obtenerMapaBolsines()
+G -> BGMap: obtenerMapaBolsines()
+BGMap -> GMap: getMapaBolsines()
+G-> P: mostrarMapaBolsines()
 
 
 ' 7. EB: selecciona un bolsín del mapa.
@@ -111,8 +118,6 @@ G->P: mostrarOpEnviarMail()
 ' 9. EB: confirma el envío del correo electrónico.
 EB-> P: tomarConfirmacionEnvioMail()
 P-> G: tomarConfirmacionEnvioMail()
-G-> G: obtenerCMDestino()
-G-> Bs: obtenerCMDestino()
 
 ' 10. Sistema: busca la dirección de correo electrónico del GCM destino.
 G->G: buscarMailGerente()
@@ -123,7 +128,7 @@ group Empleados CM Destino [mientras haya empleados y no se encuentre el gerente
     Em -> R: esGerente()
 end
 
-G-> GE: obtenerMail()
+G-> GE: getMail()
 
 G-> G: enviarMailGerente()
 

@@ -21,7 +21,7 @@ class PantSegBolsines <<Boundary>> {
   + opConsultarUbicBolsines()
   + habilitarVentana()
   + mostrarNombreCM()
-  + mostrarUbicacionBolsin()
+  + mostrarMapaBolsines()
   + solicitarSeleccionBolsin()
   + tomarSeleccionBolsin()
   + mostrarOpEnviarMail()
@@ -34,32 +34,33 @@ class GestorSegBolsines <<Control>> {
   - bolsinesEnviados : List
   - bolsinSeleccionado : String
   - cmUsuarioLogueado : String
-  - localizacionBolsin : String
+  - ubicacionBolsin : String
   - cmDestino : String
   - mailGerente : String
 
   + opcionConsultarUbicBolsines()
   + buscarCMUsuarioLogueado()
   + buscarBolsinesEnEstadoEnviado()
-  + buscarDatosLocalizacionBolsin()
+  + buscarUbicacionBolsines()
   + tomarSeleccionBolsin()
   + tomarConfirmacionEnvioMail()
   + obtenerCMDestino()
+  + obtenerMapaBolsines()
   + buscarMailGerente()
   + enviarMailGerente()
   + finCU()
 }
 
 class GPSTracker <<Boundary>> {
-  - datosLocalizacionBolsin
+  - ubicacionBolsin
 
-  + obtenerDatosLocalizacion()
+  + obtenerUbicacionBolsin()
 }
 
 class GoogleMaps <<Boundary>> {
-  - ubicacionMapaBolsin
+  - mapaBolsines
 
-  + obtenerUbicacionBolsin()
+  + obtenerMapaBolsines()
 }
 
 ' ==========================================
@@ -87,9 +88,9 @@ class Empleado <<Entity>> {
   - nombreCM : String
 
   + esTuCM()
-  + obtenerNombreCM()
+  + obtenerCodigoCM()
   + esGerenteCMDestino()
-  + obtenerMail()
+  + getMail()
 }
 
 class Rol <<Entity>> {
@@ -103,8 +104,8 @@ class ComisionMedica <<Entity>> {
   - nombre : String
   - codigo : String
 
-  + obtenerNombreCM()
-  + obtenerCodigoCM()
+  + getNombreCM()
+  + getCodigoCM()
 }
 
 class Bolsin <<Entity>> {
@@ -115,17 +116,17 @@ class Bolsin <<Entity>> {
 
   + sosEnviado()
   + esTuCMDeOrigen()
-  + obtenerNumeroPrecinto()
-  + obtenerNumeroBolsin()
+  + getNumeroPrecinto()
+  + getNumeroBolsin()
   + obtenerCMDestino()
-  + obtenerDatosLocalizacionBolsin()
+  + obtenerUbicacionBolsin()
+  + obtenerDispositivoGPS()
 }
 
 class CambioDeEstadoBolsin <<Entity>> {
   - fechaHoraInicio : Date
   - fechaHoraFin : Date
 
-  + obtenerFechaHoraInicio()
   + sosActual()
   + sosEnviado()
 }
@@ -137,6 +138,14 @@ class EstadoBolsin <<Entity>> {
   + sosEnviado()
 }
 
+class DispositivoGPS <<Entity>> {
+  - marca
+  - modelo
+
+  + getMarcaGPS()
+  + getModeloGPS()
+
+}
 ' ==========================================
 ' RELACIONES
 ' ==========================================
