@@ -1,16 +1,23 @@
 # PPAI-2026
+DUDAS DE GRUPO
 
-1. Numero bolsin
-Fecha ultima actualizacion
-Si tienen que se renviados al CU31
+DIAGRAMA SECUENCIA
+1. 11. Sistema: para informar número de bolsín, fecha y hora de última actualización, y las coordenadas del bolsín.
+Se incluye al Caso de Uso 31 Notificar ubicación de bolsín. Informa la ejecución exitosa del caso de uso 31. Fin del
+' caso de uso.
 
-2. Revision boundary e interfaces GPS tracker y maps
+Obtenemos fechaHoraInicio cambio de estado del bolsin en el metodo N 16. Tenemos que pasarle esta informacion al CU31
+de alguna manera en el ds?
 
-3. Dsoporte
-  - bolsines : Bolsin
-  - lblBolsinSeleccionado : String
+2. Revision Interfaces y Actores para GPS Tracker y maps. Esta bien ahora?
 
-4. Diagrama clases
-Como reprsentar llamado a CU
+DIAGRAMA DE SOPORTE
+3. Como representamos la llamada a un CU?
 
-5. Cambio de grupo disenio apertura disenio
+//
+4. Se podra abrir la eleccion de grupos en el campus? No pudimos completarlo.
+
+5. Nueva clase DispositivoGPS: En loop buscar bolsines enviados traer de cada bolsin modelo de dispositivo y codigo de cm destino.
+
+6. Metodo de obtenerMapa dentro del loop de obtener ubicacion.
+
