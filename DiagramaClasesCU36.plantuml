@@ -7,8 +7,8 @@ skinparam shadowing false
 ' CLASES BOUNDARY Y CONTROL
 ' ==========================================
 class PantSegBolsines <<Boundary>> {
-  - bolsinesLocalizados : List
   - bolsines : List
+  - bolsinesLocalizados : List
   - lblBolsinSeleccionado : String
   - filtroNumeroPrecinto : String
   - filtroCMDestino : String
@@ -35,7 +35,6 @@ class GestorSegBolsines <<Control>> {
   - bolsinSeleccionado : String
   - cmUsuarioLogueado : String
   - ubicacionBolsin : String
-  - cmDestino : String
   - mailGerente : String
 
   + opcionConsultarUbicBolsines()
@@ -44,20 +43,19 @@ class GestorSegBolsines <<Control>> {
   + buscarUbicacionBolsines()
   + tomarSeleccionBolsin()
   + tomarConfirmacionEnvioMail()
-  + obtenerCMDestino()
   + obtenerMapaBolsines()
   + buscarMailGerente()
   + enviarMailGerente()
   + finCU()
 }
 
-class GPSTracker <<Boundary>> {
+class InterfazGPSTracker <<Boundary>> {
   - ubicacionBolsin
 
   + obtenerUbicacionBolsin()
 }
 
-class GoogleMaps <<Boundary>> {
+class InterfazGoogleMaps <<Boundary>> {
   - mapaBolsines
 
   + obtenerMapaBolsines()
@@ -119,7 +117,6 @@ class Bolsin <<Entity>> {
   + getNumeroPrecinto()
   + getNumeroBolsin()
   + obtenerCMDestino()
-  + obtenerUbicacionBolsin()
   + obtenerDispositivoGPS()
 }
 

@@ -48,9 +48,9 @@ entity "A:CambioDeEstadoBolsin" as estAB
 entity "A:EstadoBolsin" as estB
 
 ' interfaz clase fabricacion pura
-boundary "GPS Tracker" as GPS
+boundary "InterfazGPSTracker" as GPS
 actor "GPS Tracker" as GpAc
-boundary "GoogleMaps" as BGMap
+boundary "InterfazGoogleMaps" as BGMap
 actor "GoogleMaps" as GMap
 participant "CU31" as CU31
 
@@ -94,8 +94,7 @@ group Bolsines en estado Enviado [mientras haya bolsines enviados]
     G -> B: obtenerDispositivoGPS()
     B -> Dgps: getMarcaGPS()
     B -> Dgps: getModeloGPS()
-    G-> B: obtenerUbicacionBolsin()
-    B-> GPS: obtenerUbicacionBolsin()
+    G-> GPS: obtenerUbicacionBolsin()
     GPS-> GpAc: getUbicacionBolsin()
 end
 ' 6. Sistema: muestra sobre un mapa la posición de los bolsines, habilitando la opción de seleccionar un bolsín del
