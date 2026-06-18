@@ -42,6 +42,7 @@ entity "<b><u>:Empleado" as Em #FF5B00
 entity "<b><u>:Comision Medica" as CM
 entity "<b><u>:Rol" as R 
 entity "<b><u>:CambioDeEstadoBolsin" as cEstB #FF5B00
+entity "<b><u>A: CambioDeEstadoBolsin" as ACE #C5EBEF
 entity "<b><u>A:EstadoBolsin" as estB
 
 boundary "<b><u>InterfazGPSTracker" as GPS
@@ -81,9 +82,10 @@ deactivate G
         G -> B ++ #FF5B00: sosEnviado()
             B -> cEstB ++ #FF5B00: sosActual()
             deactivate cEstB
-            B -> cEstB ++ #FF5B00: sosEnviado()
-                cEstB -> estB ++: sosEnviado()
+            B -> ACE ++ : sosEnviado()
+                ACE -> estB ++: sosEnviado()
                 deactivate estB
+                deactivate ACE
             deactivate cEstB
             deactivate cEstB
         deactivate B
@@ -122,7 +124,7 @@ deactivate G
 G -> G ++ : obtenerMapaBolsines()
 deactivate G
 G -> BGMap ++: obtenerMapaBolsines()
-    BGMap -> GMap ++: obtenerMapaBolsines()
+    BGMap -> GMap ++: getMapaBolsines()
     deactivate GMap
 deactivate BGMap
 
