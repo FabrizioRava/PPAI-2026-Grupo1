@@ -11,3 +11,16 @@ proyecto/
     │   ├── domain/           # Entidades (Bolsin, Sesion, Empleado, etc.)
     │   ├── mockData.ts       # Base de datos simulada en memoria (¡Clave!)
     │   └── server.ts         # Punto de entrada de la API
+
+
+COMO CORRER PROYECTO
+Terminal front, back
+
+BACK
+npm install
+npm run start
+
+FRONT
+npm install
+npm install @vitejs/plugin-react@latest --save-dev
+npm run dev

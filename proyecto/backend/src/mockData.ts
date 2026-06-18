@@ -18,6 +18,8 @@ export const cmVillaMaria = new ComisionMedica(1, 'Villa María', 'CM-VM');
 export const cmCordoba = new ComisionMedica(2, 'Córdoba', 'CM-CBA');
 export const cmRioCuarto = new ComisionMedica(3, 'Río Cuarto', 'CM-RC');
 export const cmSanFrancisco = new ComisionMedica(4, 'San Francisco', 'CM-SF');
+export const cmMarcosJuarez = new ComisionMedica(5, 'Marcos Juárez', 'CM-MJ');
+export const cmSanJuan = new ComisionMedica(6, 'San Juan', 'CM-SJ');
 
 // Estados de Bolsin
 export const estadoEnviado = new EstadoBolsin(1, 'Enviado');
@@ -121,6 +123,12 @@ export const bolsines: Bolsin[] = [
     new CambioDeEstadoBolsin(10, estadoEnviado, new Date(Date.now() - 140000), null)
   ]),
 
+  // 6. BOL-4506 -> Origen Marcos Juarez, Destino San Juan (Enviado)
+  new Bolsin(6, 'BOL-4506', cmVillaMaria, cmSanJuan, [
+    new CambioDeEstadoBolsin(11, estadoCreado, new Date(Date.now() - 120000), new Date(Date.now() - 90000)),
+    new CambioDeEstadoBolsin(12, estadoEnviado, new Date(Date.now() - 90000), null)
+]),
+
   // ==========================================
   // GRUPO B: 5 Bolsines de control (No deben aparecer en el mapa)
   // ==========================================
@@ -155,5 +163,6 @@ export const bolsines: Bolsin[] = [
   new Bolsin(10, 'BOL-4702', cmSanFrancisco, cmCordoba, [
     new CambioDeEstadoBolsin(22, estadoCreado, new Date(Date.now() - 120000), new Date(Date.now() - 90000)),
     new CambioDeEstadoBolsin(23, estadoEnviado, new Date(Date.now() - 90000), null)
-  ])
+  ]),
+
 ];
