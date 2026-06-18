@@ -38,7 +38,6 @@ entity "G:Empleado" as GE
 
 entity ":Bolsin" as B #FFD1DC
 entity ":DispositivoGPS" as Dgps
-entity "S:Bolsin" as Bs 
 entity ":Empleado" as Em #FFD1DC
 entity ":Comision Medica" as CM
 entity ":Rol" as R 
@@ -74,7 +73,7 @@ G-> P: mostrarNombreCM()
 ' 3. Sistema: busca los bolsines en estado Enviado cuya CM origen es igual a la CM del usuario logueado.
 G-> G: buscarBolsinesEnEstadoEnviado()
 group Bolsines en estado Enviado [mientras haya bolsines]
-    G -> B: sosEnviado()
+    G -> Bz: sosEnviado()
     B -> cEstB: sosActual()*
     B -> estAB: sosEnviado()
     estAB-> estB: sosEnviado()

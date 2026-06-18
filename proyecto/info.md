@@ -22,5 +22,11 @@ npm run start
 
 FRONT
 npm install
+# Actualizar dependencias
 npm install @vitejs/plugin-react@latest --save-dev
+
+npm cache clean -f
+sudo npm install -g n
+sudo n lts
+
 npm run dev
