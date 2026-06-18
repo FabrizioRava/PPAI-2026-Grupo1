@@ -56,10 +56,9 @@ export const PantSegBolsines: React.FC = () => {
   }, []);
 
   // Método: tomarSeleccionBolsin(bolsin) - Paso 7 del diagrama de secuencia
-  // Abre el Modal de confirmación al hacer clic en un bolsín del mapa
+  // Selecciona el bolsín al hacer clic en un bolsín del mapa
   const tomarSeleccionBolsin = (bolsin: Bolsin) => {
     setBolsinSeleccionado(bolsin);
-    setShowModal(true);
   };
 
   // Método: tomarConfirmacionEnvioMail() - Paso 9 del diagrama de secuencia
