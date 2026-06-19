@@ -1,0 +1,170 @@
+@startuml DiagramaClasesSoporte
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+skinparam shadowing false
+
+' ==========================================
+' CLASES BOUNDARY Y CONTROL
+' ==========================================
+class PantSegBolsines <<Boundary>> {
+  - bolsines : List
+  - bolsinesLocalizados : List
+  - lblBolsinSeleccionado : String
+  - filtroNumeroPrecinto : String
+  - filtroCMDestino : String
+  - opcionSeleccionarBolsin : boolean
+  - opcionConfirmarEnvioMail : boolean
+  - opcionCancelar : boolean
+  - ubicacionBolsin : String
+  - nombreCM : String
+
+  + opConsultarUbicBolsines()
+  + habilitarVentana()
+  + mostrarNombreCM()
+  + mostrarMapaBolsines()
+  + solicitarSeleccionBolsin()
+  + tomarSeleccionBolsin()
+  + mostrarOpEnviarMail()
+  + tomarConfirmacionEnvioMail()
+  + mostrarMensajeEnvioMail()
+}
+
+class GestorSegBolsines <<Control>> {
+  - cmUsuarioLogueado : ComisionMedica
+  - bolsinesEnviados : List
+  - bolsinSeleccionado : String
+  - cmUsuarioLogueado : String
+  - ubicacionBolsin : String
+  - mailGerente : String
+
+  + opcionConsultarUbicBolsines()
+  + buscarCMUsuarioLogueado()
+  + buscarBolsinesEnEstadoEnviado()
+  + buscarUbicacionBolsines()
+  + tomarSeleccionBolsin()
+  + tomarConfirmacionEnvioMail()
+  + obtenerMapaBolsines()
+  + buscarMailGerente()
+  + enviarMailGerente()
+  + finCU()
+}
+
+class InterfazGPSTracker <<Boundary>> {
+  - ubicacionBolsin
+
+  + obtenerUbicacionBolsin()
+}
+
+class InterfazGoogleMaps <<Boundary>> {
+  - mapaBolsines
+
+  + obtenerMapaBolsines()
+}
+
+' ==========================================
+' ENTIDADES DE DOMINIO
+' ==========================================
+class Sesion <<Entity>> {
+  - fechaHoraInicio : Date
+  - fechaHoraFin : Date
+  - cmUsuarioLogueado : String
+
+  + buscarCMUsuarioLogueado()
+}
+
+class Usuario <<Entity>> {
+  - nombreUsuario : String
+  - contraseña : String
+
+  + obtenerEmpleado()
+}
+
+class Empleado <<Entity>> {
+  - nombre : String
+  - apellido : String
+  - mailGerente : String
+  - nombreCM : String
+
+  + esTuCM()
+  + obtenerCodigoCM()
+  + esGerenteCMDestino()
+  + getMail()
+}
+
+class Rol <<Entity>> {
+  - nombre : String
+  - mail : String
+
+  + esGerente()
+}
+
+class ComisionMedica <<Entity>> {
+  - nombre : String
+  - codigo : String
+
+  + getNombreCM()
+  + getCodigoCM()
+}
+
+class Bolsin <<Entity>> {
+  - numeroPrecinto : int
+  - numeroBolsin : int
+  - bolsinesEnviados : List
+  - cmDestino : String
+
+  + sosEnviado()
+  + esTuCMDeOrigen()
+  + getNumeroPrecinto()
+  + getNumeroBolsin()
+  + obtenerCMDestino()
+  + obtenerDispositivoGPS()
+}
+
+class CambioDeEstadoBolsin <<Entity>> {
+  - fechaHoraInicio : Date
+  - fechaHoraFin : Date
+
+  + sosActual()
+  + sosEnviado()
+}
+
+class EstadoBolsin <<Entity>> {
+  - nombre : String
+  - descripcion : String
+
+  + sosEnviado()
+}
+
+class DispositivoGPS <<Entity>> {
+  - marca
+  - modelo
+
+  + getMarcaGPS()
+  + getModeloGPS()
+
+}
+' ==========================================
+' RELACIONES
+' ==========================================
+
+' Relaciones Pantalla - Gestor (Conocimiento mutuo, flechas punteadas)
+PantSegBolsines <..> GestorSegBolsines
+
+' Relaciones Gestor - Entidades (Conoce a las que llama directamente por flechas punteadas)
+GestorSegBolsines ..> Sesion
+GestorSegBolsines ..> Bolsin
+Bolsin ..> GPSTracker
+GestorSegBolsines ..> GoogleMaps
+GestorSegBolsines ..> Empleado
+
+' Relaciones de Dominio (Como el Modelo de Dominio Clásico - Flechas sólidas)
+Sesion --> "1 " Usuario : usuario
+Usuario --> "1 " Empleado : empleado
+Empleado  --> "1    " ComisionMedica : comision medica
+Empleado  --> "1  " Rol : rol
+Bolsin  --> "1 " ComisionMedica : cm origen
+Bolsin  --> "1 " ComisionMedica : cm destino
+Bolsin  --> "1...*      " CambioDeEstadoBolsin : cambio de estado bolsin
+CambioDeEstadoBolsin --> "1 " EstadoBolsin : estado bolsin
+
+@enduml
