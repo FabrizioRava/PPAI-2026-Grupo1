@@ -10,4 +10,8 @@ export class Usuario {
     this.username = username;
     this.empleado = empleado;
   }
+
+  obtenerEmpleado(): Empleado {
+    return this.empleado;
+  }
 }

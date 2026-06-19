@@ -123,46 +123,47 @@ export const bolsines: Bolsin[] = [
     new CambioDeEstadoBolsin(10, estadoEnviado, new Date(Date.now() - 140000), null)
   ]),
 
-  // 6. BOL-4506 -> Origen Marcos Juarez, Destino San Juan (Enviado)
-  new Bolsin(6, 'BOL-4506', cmVillaMaria, cmSanJuan, [
+  // ==========================================
+  // GRUPO B: Bolsines de control (No deben aparecer en el mapa)
+  // ==========================================
+
+  // B.1: Bolsín en estado 'Enviado' pero con origen de OTRA comisión (Marcos Juárez)
+  // 6. BOL-4506 -> Origen Marcos Juárez, Destino San Juan (Enviado) [no aparece: origen != Villa María]
+  new Bolsin(6, 'BOL-4506', cmMarcosJuarez, cmSanJuan, [
     new CambioDeEstadoBolsin(11, estadoCreado, new Date(Date.now() - 120000), new Date(Date.now() - 90000)),
     new CambioDeEstadoBolsin(12, estadoEnviado, new Date(Date.now() - 90000), null)
-]),
-
-  // ==========================================
-  // GRUPO B: 5 Bolsines de control (No deben aparecer en el mapa)
-  // ==========================================
-  
-  // B.1: 3 Bolsines con origen 'Villa María' pero estado actual 'Entregado' o 'Recibido'
-  // 6. BOL-4601 -> Destino Córdoba (Entregado)
-  new Bolsin(6, 'BOL-4601', cmVillaMaria, cmCordoba, [
-    new CambioDeEstadoBolsin(11, estadoCreado, new Date(Date.now() - 300000), new Date(Date.now() - 250000)),
-    new CambioDeEstadoBolsin(12, estadoEnviado, new Date(Date.now() - 250000), new Date(Date.now() - 50000)),
-    new CambioDeEstadoBolsin(13, estadoEntregado, new Date(Date.now() - 50000), null)
-  ]),
-  // 7. BOL-4602 -> Destino Río Cuarto (Entregado)
-  new Bolsin(7, 'BOL-4602', cmVillaMaria, cmRioCuarto, [
-    new CambioDeEstadoBolsin(14, estadoCreado, new Date(Date.now() - 400000), new Date(Date.now() - 350000)),
-    new CambioDeEstadoBolsin(15, estadoEnviado, new Date(Date.now() - 350000), new Date(Date.now() - 60000)),
-    new CambioDeEstadoBolsin(16, estadoEntregado, new Date(Date.now() - 60000), null)
-  ]),
-  // 8. BOL-4603 -> Destino Córdoba (Recibido)
-  new Bolsin(8, 'BOL-4603', cmVillaMaria, cmCordoba, [
-    new CambioDeEstadoBolsin(17, estadoCreado, new Date(Date.now() - 500000), new Date(Date.now() - 450000)),
-    new CambioDeEstadoBolsin(18, estadoEnviado, new Date(Date.now() - 450000), new Date(Date.now() - 100000)),
-    new CambioDeEstadoBolsin(19, estadoRecibido, new Date(Date.now() - 100000), null)
   ]),
 
-  // B.2: 2 Bolsines en estado 'Enviado' pero cuyo origen sea otra comisión
-  // 9. BOL-4701 -> Origen San Francisco, Destino Córdoba (Enviado)
-  new Bolsin(9, 'BOL-4701', cmSanFrancisco, cmCordoba, [
-    new CambioDeEstadoBolsin(20, estadoCreado, new Date(Date.now() - 100000), new Date(Date.now() - 80000)),
-    new CambioDeEstadoBolsin(21, estadoEnviado, new Date(Date.now() - 80000), null)
+  // B.2: 3 Bolsines con origen 'Villa María' pero estado actual 'Entregado' o 'Recibido'
+  // 7. BOL-4601 -> Destino Córdoba (Entregado)
+  new Bolsin(7, 'BOL-4601', cmVillaMaria, cmCordoba, [
+    new CambioDeEstadoBolsin(13, estadoCreado, new Date(Date.now() - 300000), new Date(Date.now() - 250000)),
+    new CambioDeEstadoBolsin(14, estadoEnviado, new Date(Date.now() - 250000), new Date(Date.now() - 50000)),
+    new CambioDeEstadoBolsin(15, estadoEntregado, new Date(Date.now() - 50000), null)
   ]),
-  // 10. BOL-4702 -> Origen San Francisco, Destino Córdoba (Enviado)
-  new Bolsin(10, 'BOL-4702', cmSanFrancisco, cmCordoba, [
-    new CambioDeEstadoBolsin(22, estadoCreado, new Date(Date.now() - 120000), new Date(Date.now() - 90000)),
-    new CambioDeEstadoBolsin(23, estadoEnviado, new Date(Date.now() - 90000), null)
+  // 8. BOL-4602 -> Destino Río Cuarto (Entregado)
+  new Bolsin(8, 'BOL-4602', cmVillaMaria, cmRioCuarto, [
+    new CambioDeEstadoBolsin(16, estadoCreado, new Date(Date.now() - 400000), new Date(Date.now() - 350000)),
+    new CambioDeEstadoBolsin(17, estadoEnviado, new Date(Date.now() - 350000), new Date(Date.now() - 60000)),
+    new CambioDeEstadoBolsin(18, estadoEntregado, new Date(Date.now() - 60000), null)
+  ]),
+  // 9. BOL-4603 -> Destino Córdoba (Recibido)
+  new Bolsin(9, 'BOL-4603', cmVillaMaria, cmCordoba, [
+    new CambioDeEstadoBolsin(19, estadoCreado, new Date(Date.now() - 500000), new Date(Date.now() - 450000)),
+    new CambioDeEstadoBolsin(20, estadoEnviado, new Date(Date.now() - 450000), new Date(Date.now() - 100000)),
+    new CambioDeEstadoBolsin(21, estadoRecibido, new Date(Date.now() - 100000), null)
+  ]),
+
+  // B.3: 2 Bolsines en estado 'Enviado' pero cuyo origen sea otra comisión
+  // 10. BOL-4701 -> Origen San Francisco, Destino Córdoba (Enviado)
+  new Bolsin(10, 'BOL-4701', cmSanFrancisco, cmCordoba, [
+    new CambioDeEstadoBolsin(22, estadoCreado, new Date(Date.now() - 100000), new Date(Date.now() - 80000)),
+    new CambioDeEstadoBolsin(23, estadoEnviado, new Date(Date.now() - 80000), null)
+  ]),
+  // 11. BOL-4702 -> Origen San Francisco, Destino Córdoba (Enviado)
+  new Bolsin(11, 'BOL-4702', cmSanFrancisco, cmCordoba, [
+    new CambioDeEstadoBolsin(24, estadoCreado, new Date(Date.now() - 120000), new Date(Date.now() - 90000)),
+    new CambioDeEstadoBolsin(25, estadoEnviado, new Date(Date.now() - 90000), null)
   ]),
 
 ];

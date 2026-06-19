@@ -1,4 +1,5 @@
 import { Usuario } from './Usuario';
+import { ComisionMedica } from './ComisionMedica';
 
 export class Sesion {
   id: number;
@@ -18,9 +19,12 @@ export class Sesion {
     }
   }
 
-  static buscarUsuarioLogueado(): Usuario | null {
+  // Paso 2 del diagrama: G -> S: buscarCMUsuarioLogueado()
+  // Cadena: A:Sesion -> L:Usuario.obtenerEmpleado() -> L:Empleado.obtenerCodigoCM() (devuelve la CM)
+  static buscarCMUsuarioLogueado(): ComisionMedica | null {
     if (Sesion.activeSession && Sesion.activeSession.activa) {
-      return Sesion.activeSession.usuario;
+      const empleado = Sesion.activeSession.usuario.obtenerEmpleado();
+      return empleado.obtenerCodigoCM();
     }
     return null;
   }

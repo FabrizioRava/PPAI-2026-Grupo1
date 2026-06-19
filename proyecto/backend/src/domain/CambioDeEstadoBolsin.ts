@@ -21,4 +21,9 @@ export class CambioDeEstadoBolsin {
   sosActual(): boolean {
     return this.fechaHoraFin === null;
   }
+
+  // Diagrama (paso 3): estAB -> estB: sosEnviado()
+  sosEnviado(): boolean {
+    return this.estadoBolsin.sosEnviado();
+  }
 }

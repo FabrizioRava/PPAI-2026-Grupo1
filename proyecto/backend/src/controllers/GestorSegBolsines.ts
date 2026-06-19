@@ -10,9 +10,7 @@ export class GestorSegBolsines {
    * Paso 2: Busca la CM del usuario logueado en la sesión activa.
    */
   static buscarCMUsuarioLogueado(): ComisionMedica | null {
-    const usuarioLogueado = Sesion.buscarUsuarioLogueado();
-    if (!usuarioLogueado) return null;
-    return usuarioLogueado.empleado.comisionMedica;
+    return Sesion.buscarCMUsuarioLogueado();
   }
 
   /**
@@ -22,7 +20,7 @@ export class GestorSegBolsines {
   static buscarBolsines(cmId: number): Bolsin[] {
     return bolsines.filter(bolsin => {
       const esOrigen = bolsin.esTuCMDeOrigen(cmId);
-      const esEnviado = bolsin.buscarBolsinesEnEstadoEnviado();
+      const esEnviado = bolsin.sosEnviado();
       return esOrigen && esEnviado;
     });
   }
@@ -37,23 +35,36 @@ export class GestorSegBolsines {
     longitud: number;
     estado: string;
     fechaHoraActualizacion: string;
+    cmDestinoNombre: string;
+    cmDestinoCodigo: string;
   }> {
     return bolsinesEncontrados.map(bolsin => {
-      // Obtenemos los datos desde el sensor de geolocalización (GPSTracker)
-      const localizacion = GPSTracker.obtenerDatosLocalizacion(bolsin.codigo);
+      // Paso 4 del diagrama: obtenerDispositivoGPS() -> getMarcaGPS() / getModeloGPS()
+      const dispositivo = bolsin.obtenerDispositivoGPS();
+      const marcaGPS = dispositivo.getMarcaGPS();
+      const modeloGPS = dispositivo.getModeloGPS();
 
-      // Convertimos el código 'BOL-XXX' a número para numeroPrecinto
-      const numeroPrecinto = parseInt(bolsin.codigo.replace(/\D/g, ''), 10) || bolsin.id;
+      // Paso 4-5 del diagrama: InterfazGPSTracker.obtenerUbicacionBolsin()
+      const localizacion = GPSTracker.obtenerUbicacionBolsin(bolsin.codigo);
+      void marcaGPS; void modeloGPS; // datos del dispositivo consultados según el diagrama
+
+      // Paso 3 del diagrama: número de precinto del bolsín
+      const numeroPrecinto = bolsin.getNumeroPrecinto();
 
       // Obtenemos el nombre del estado actual del bolsín
       const estadoActual = bolsin.getEstadoActual()?.nombre || 'Enviado';
+
+      // Paso 3 del diagrama: obtenerCMDestino() -> getNombreCM() / getCodigoCM()
+      const cmDestino = bolsin.obtenerCMDestino();
 
       return {
         numeroPrecinto,
         latitud: localizacion.latitud,
         longitud: localizacion.longitud,
         estado: estadoActual,
-        fechaHoraActualizacion: localizacion.fechaHoraActualizacion.toISOString()
+        fechaHoraActualizacion: localizacion.fechaHoraActualizacion.toISOString(),
+        cmDestinoNombre: cmDestino.getNombreCM(),
+        cmDestinoCodigo: cmDestino.getCodigoCM()
       };
     });
   }
@@ -78,7 +89,7 @@ export class GestorSegBolsines {
 
       // 4. Devolver la estructura exacta solicitada con fechaHoraActualizacion
       const respuestaExacta = {
-        nombreCM: cmUsuario.nombre,
+        nombreCM: cmUsuario.getNombreCM(),
         bolsines: bolsinesConUbicacion
       };
 
@@ -90,16 +101,16 @@ export class GestorSegBolsines {
 
   /**
    * Paso 10 del diagrama de secuencia: Busca el mail del Gerente de la CM destino.
-   * Recorre los empleados de la CM destino, filtrando aquel cuyo Rol ejecute sosGerente() === true
-   * y extrayendo su correo electrónico con obtenerMail().
+   * Recorre los empleados de la CM destino, filtrando aquel cuyo Rol ejecute esGerente() === true
+   * y extrayendo su correo electrónico con getMail().
    */
   static buscarMailGerente(cmDestino: ComisionMedica): string | null {
-    // Buscamos en el listado de empleados cargados en el mock
-    const gerente = empleadosCordoba.find(e => 
-      e.comisionMedica.id === cmDestino.id && e.rol.sosGerente() === true
+    // Diagrama (paso 10): Em -> esTuCM() / esGerenteCMDestino() -> R: esGerente()
+    const gerente = empleadosCordoba.find(e =>
+      e.esTuCM(cmDestino) && e.esGerenteCMDestino()
     );
 
-    return gerente ? gerente.obtenerMail() : null;
+    return gerente ? gerente.getMail() : null;
   }
 
   /**
@@ -154,7 +165,7 @@ export class GestorSegBolsines {
       }
 
       // Obtener ubicación GPS actual y su fechaHoraActualizacion correspondiente
-      const coordenadas = GPSTracker.obtenerDatosLocalizacion(bolsin.codigo);
+      const coordenadas = GPSTracker.obtenerUbicacionBolsin(bolsin.codigo);
 
       // Paso 11: Ejecutar enviarMailGerente() con la fecha y hora de la última actualización
       GestorSegBolsines.enviarMailGerente(

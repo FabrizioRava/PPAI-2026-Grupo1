@@ -8,4 +8,12 @@ export class ComisionMedica {
     this.nombre = nombre;
     this.codigo = codigo;
   }
+
+  getNombreCM(): string {
+    return this.nombre;
+  }
+
+  getCodigoCM(): string {
+    return this.codigo;
+  }
 }

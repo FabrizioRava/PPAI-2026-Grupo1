@@ -7,7 +7,7 @@ export class Rol {
     this.nombre = nombre;
   }
 
-  sosGerente(): boolean {
+  esGerente(): boolean {
     return this.nombre === 'Gerente';
   }
 }

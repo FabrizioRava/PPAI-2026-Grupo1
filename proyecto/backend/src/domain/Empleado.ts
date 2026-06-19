@@ -18,8 +18,24 @@ export class Empleado {
     this.comisionMedica = comisionMedica;
   }
 
-  obtenerMail(): string {
+  getMail(): string {
     return this.correo;
+  }
+
+  // Diagrama (paso 2): el mensaje se llama obtenerCodigoCM; devuelve la CM del empleado
+  // para que luego se consulten getNombreCM()/getCodigoCM() sobre ella.
+  obtenerCodigoCM(): ComisionMedica {
+    return this.comisionMedica;
+  }
+
+  // Diagrama (paso 10): el empleado pertenece a la CM destino indicada
+  esTuCM(comisionMedica: ComisionMedica): boolean {
+    return this.comisionMedica.id === comisionMedica.id;
+  }
+
+  // Diagrama (paso 10): el empleado es Gerente (delega en su Rol)
+  esGerenteCMDestino(): boolean {
+    return this.rol.esGerente();
   }
 }
 

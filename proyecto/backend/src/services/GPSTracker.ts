@@ -16,10 +16,11 @@ export class GPSTracker {
   };
 
   /**
+   * Diagrama (paso 4-5): InterfazGPSTracker.obtenerUbicacionBolsin()
    * Simula la obtención de coordenadas GPS de un hardware real (XTR-4500L)
    * incorporando una fecha y hora de reporte distinta para cada bolsín.
    */
-  static obtenerDatosLocalizacion(numeroPrecinto: string): DatosLocalizacion {
+  static obtenerUbicacionBolsin(numeroPrecinto: string): DatosLocalizacion {
     if (GPSTracker.rutaLookup[numeroPrecinto]) {
       const coord = GPSTracker.rutaLookup[numeroPrecinto];
       const fechaReporte = new Date(Date.now() - coord.desfasajeMinutos * 60 * 1000);

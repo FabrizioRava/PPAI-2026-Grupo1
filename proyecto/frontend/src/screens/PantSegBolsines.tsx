@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { MapaBolsines } from '../components/MapaBolsines';
 
 // Interfaz para la entidad Bolsín con los datos localizados
 export interface Bolsin {
@@ -7,6 +8,8 @@ export interface Bolsin {
   longitud: number;
   estado: string;
   fechaHoraActualizacion: string; // Atributo de fecha/hora de la última actualización GPS
+  cmDestinoNombre: string; // Nombre de la Comisión Médica destino (paso 3 del diagrama)
+  cmDestinoCodigo: string; // Código de la Comisión Médica destino
 }
 
 export interface ApiResponse {
@@ -14,13 +17,23 @@ export interface ApiResponse {
   bolsines: Bolsin[];
 }
 
-export const PantSegBolsines: React.FC = () => {
+export interface PantSegBolsinesProps {
+  // Permite volver a la pantalla de menú (Paso 1: opConsultarUbicBolsines abre/cierra esta ventana)
+  onVolver?: () => void;
+}
+
+// Clases reutilizables del lenguaje glassmorphism (panel de vidrio esmerilado)
+const glassPanel =
+  'bg-white/55 backdrop-blur-xl border border-white/60 shadow-[0_8px_32px_rgba(68,51,79,0.12)] ring-1 ring-brand-bgMain/5';
+
+export const PantSegBolsines: React.FC<PantSegBolsinesProps> = ({ onVolver }) => {
   // Estados requeridos por el diseño y el diagrama de secuencia
   const [nombreCM, setNombreCM] = useState<string>('');
   const [bolsinesLocalizados, setBolsinesLocalizados] = useState<Bolsin[]>([]);
   const [filtroNumeroPrecinto, setFiltroNumeroPrecinto] = useState<string>('');
+  const [filtroCMDestino, setFiltroCMDestino] = useState<string>(''); // '' = todas las CM destino
   const [bolsinSeleccionado, setBolsinSeleccionado] = useState<Bolsin | null>(null);
-  
+
   // Estado para controlar la visualización del Modal (Pasos 8 y 9)
   const [showModal, setShowModal] = useState<boolean>(false);
   const [sendingMail, setSendingMail] = useState<boolean>(false);
@@ -39,14 +52,14 @@ export const PantSegBolsines: React.FC = () => {
           throw new Error(`Error en el servidor: ${response.statusText}`);
         }
         const data: ApiResponse = await response.json();
-        
+
         // Guardar en estados de React
         setNombreCM(data.nombreCM);
         setBolsinesLocalizados(data.bolsines);
         setError(null);
       } catch (err: any) {
         console.error(err);
-        setError('No se pudo establecer conexión con el servidor satelital.');
+        setError('No se pudo establecer conexión con el servidor.');
       } finally {
         setLoading(false);
       }
@@ -74,7 +87,7 @@ export const PantSegBolsines: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          numeroPrecinto: bolsinSeleccionado.numeroPrecinto
+          numeroPrecinto: bolsinSeleccionado.numeroPrecinto,
         }),
       });
 
@@ -113,72 +126,101 @@ export const PantSegBolsines: React.FC = () => {
     return `${dia}/${mes}/${anio} ${hora}:${min}`;
   };
 
-  // Filtrado de bolsines en memoria basado en filtroNumeroPrecinto
-  const bolsinesFiltrados = bolsinesLocalizados.filter(b => {
+  // Lista de CM destino únicas presentes en los bolsines localizados (para el selector de filtro)
+  const cmDestinosDisponibles = Array.from(
+    new Set(bolsinesLocalizados.map((b) => b.cmDestinoNombre))
+  ).sort((a, b) => a.localeCompare(b));
+
+  // Paso 6 del diagrama: filtrar por número de precinto Y/O por CM destino (se combinan)
+  const bolsinesFiltrados = bolsinesLocalizados.filter((b) => {
     const precintoStr = String(b.numeroPrecinto);
     const codigoFormateado = `BOL-${precintoStr.padStart(3, '0')}`;
     const busqueda = filtroNumeroPrecinto.trim().toLowerCase();
-    
-    return precintoStr.includes(busqueda) || codigoFormateado.toLowerCase().includes(busqueda);
+
+    const coincidePrecinto =
+      precintoStr.includes(busqueda) || codigoFormateado.toLowerCase().includes(busqueda);
+    const coincideDestino = filtroCMDestino === '' || b.cmDestinoNombre === filtroCMDestino;
+
+    return coincidePrecinto && coincideDestino;
   });
 
-  // Mapear coordenadas geográficas al área visible de la pantalla (Córdoba / Villa María)
-  const obtenerPosicionRadar = (lat: number, lng: number) => {
-    const latMin = -32.4;
-    const latMax = -31.4;
-    const lngMin = -64.2;
-    const lngMax = -63.2;
+  const hayFiltroActivo = filtroNumeroPrecinto !== '' || filtroCMDestino !== '';
 
-    const y = 100 - ((lat - latMin) / (latMax - latMin)) * 100;
-    const x = ((lng - lngMin) / (lngMax - lngMin)) * 100;
-
-    return {
-      left: `${Math.min(Math.max(x, 8), 92)}%`,
-      top: `${Math.min(Math.max(y, 8), 92)}%`
-    };
+  const limpiarFiltros = () => {
+    setFiltroNumeroPrecinto('');
+    setFiltroCMDestino('');
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f5f8] text-slate-800 flex flex-col font-sans antialiased selection:bg-brand-primary selection:text-white relative">
-      
+    <div className="relative min-h-dvh flex flex-col font-sans antialiased text-brand-bgMain selection:bg-brand-primary selection:text-white overflow-hidden">
+
+      {/* FONDO: gradiente base + blobs de color difuminados que dan vida al vidrio */}
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-br from-[#fbe7df] via-[#f4eef3] to-[#efe7f0]" aria-hidden="true" />
+      <div className="pointer-events-none fixed -top-32 -left-24 -z-10 w-[28rem] h-[28rem] rounded-full bg-brand-primary/25 blur-3xl" aria-hidden="true" />
+      <div className="pointer-events-none fixed top-1/3 -right-28 -z-10 w-[30rem] h-[30rem] rounded-full bg-brand-secondary/20 blur-3xl" aria-hidden="true" />
+      <div className="pointer-events-none fixed -bottom-40 left-1/3 -z-10 w-[26rem] h-[26rem] rounded-full bg-brand-bgMain/15 blur-3xl" aria-hidden="true" />
+
       {/* Sistema de Notificaciones Flotantes (Toast) */}
       {toast && (
-        <div className={`fixed bottom-5 right-5 px-5 py-3.5 rounded-xl border shadow-2xl transition-all duration-300 transform translate-y-0 z-[100] flex items-center gap-3 max-w-md ${
-          toast.type === 'success'
-            ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-            : 'bg-rose-50 border-rose-200 text-rose-800'
-        }`}>
-          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-            toast.type === 'success' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'
-          }`}>
-            {toast.type === 'success' ? '✓' : '✗'}
+        <div
+          role="status"
+          aria-live="polite"
+          className={`fixed bottom-5 right-5 px-5 py-3.5 rounded-2xl backdrop-blur-xl border shadow-2xl transition-all duration-300 z-[100] flex items-center gap-3 max-w-md ${
+            toast.type === 'success'
+              ? 'bg-emerald-50/80 border-emerald-200/80 text-emerald-900'
+              : 'bg-rose-50/80 border-rose-200/80 text-rose-900'
+          }`}
+        >
+          <div
+            className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center ${
+              toast.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
+            }`}
+          >
+            {toast.type === 'success' ? (
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+            ) : (
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            )}
           </div>
           <span className="text-xs font-bold">{toast.message}</span>
         </div>
       )}
 
       {/* HEADER con el nombre de la CM del usuario */}
-      <header className="bg-brand-bgMain text-white sticky top-0 z-50 shadow-md">
+      <header className={`sticky top-0 z-50 ${glassPanel} border-x-0 border-t-0 rounded-none`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-primary to-brand-secondary flex items-center justify-center shadow-lg shadow-brand-primary/20">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            {onVolver && (
+              <button
+                onClick={onVolver}
+                aria-label="Volver al menú principal"
+                className="w-9 h-9 -ml-1 shrink-0 rounded-xl flex items-center justify-center text-brand-bgMain hover:bg-brand-bgMain/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-primary to-brand-secondary flex items-center justify-center shadow-lg shadow-brand-primary/30">
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight text-white">
-                Seguimiento de Bolsines
-              </h1>
-              <p className="text-xs text-brand-bgContainer/80 font-mono">PPAI 2026 • SEGUIMIENTO EN TIEMPO REAL</p>
+              <h1 className="text-lg font-bold tracking-tight text-brand-bgMain">Seguimiento de Bolsines</h1>
+              <p className="text-xs text-brand-bgMain/60 font-mono">PPAI 2026 • SEGUIMIENTO EN TIEMPO REAL</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-brand-accent animate-pulse"></span>
-            <span className="text-xs text-brand-bgContainer/90 font-medium">Comisión Médica de Origen:</span>
-            <span className="text-xs font-bold text-white bg-brand-secondary px-2.5 py-1.5 rounded-lg shadow-sm">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 motion-safe:animate-pulse shadow-sm shadow-emerald-500/50"></span>
+            <span className="hidden sm:inline text-xs text-brand-bgMain/70 font-medium">Comisión Médica de Origen:</span>
+            <span className="text-xs font-bold text-white bg-gradient-to-tr from-brand-primary to-brand-secondary px-2.5 py-1.5 rounded-lg shadow-sm">
               {nombreCM || 'Villa María'}
             </span>
           </div>
@@ -187,40 +229,82 @@ export const PantSegBolsines: React.FC = () => {
 
       {/* CONTENIDO */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
-        
-        {/* BARRA DE BÚSQUEDA Y FILTRADO */}
-        <section className="bg-brand-bgContainer border border-brand-bgMain/20 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row items-center gap-4">
-          <div className="w-full md:w-1/2 flex flex-col gap-1.5">
-            <label htmlFor="search-input" className="text-xs font-bold text-brand-bgMain uppercase tracking-wider">
-              Filtrar por Número de Precinto
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-brand-bgMain/60">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+
+        {/* BARRA DE BÚSQUEDA Y FILTRADO (Paso 6: filtrar por número de precinto o CM destino) */}
+        <section className={`${glassPanel} rounded-2xl p-5 flex flex-col gap-4`}>
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Filtro por número de precinto */}
+            <div className="w-full md:w-1/2 flex flex-col gap-1.5">
+              <label htmlFor="search-input" className="text-xs font-bold text-brand-bgMain uppercase tracking-wider">
+                Filtrar por Número de Precinto
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-brand-bgMain/50">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  id="search-input"
+                  type="text"
+                  inputMode="text"
+                  placeholder="Ingresa número de precinto (ej. 4501 o BOL-4501)"
+                  value={filtroNumeroPrecinto}
+                  onChange={(e) => setFiltroNumeroPrecinto(e.target.value)}
+                  className="w-full bg-white/70 border border-white/70 rounded-xl py-2.5 pl-10 pr-4 text-sm text-brand-bgMain placeholder-brand-bgMain/40 focus:outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/40 transition-all"
+                />
               </div>
-              <input
-                id="search-input"
-                type="text"
-                placeholder="Ingresa número de precinto (ej. 001 o BOL-001)"
-                value={filtroNumeroPrecinto}
-                onChange={(e) => setFiltroNumeroPrecinto(e.target.value)}
-                className="w-full bg-white border border-brand-bgMain/20 rounded-xl py-2.5 pl-10 pr-4 text-sm text-brand-bgMain placeholder-slate-400 focus:outline-none focus:border-brand-secondary focus:ring-1 focus:ring-brand-secondary/50 transition-all"
-              />
+            </div>
+
+            {/* Filtro por Comisión Médica destino */}
+            <div className="w-full md:w-1/2 flex flex-col gap-1.5">
+              <label htmlFor="filtro-destino" className="text-xs font-bold text-brand-bgMain uppercase tracking-wider">
+                Filtrar por CM Destino
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-brand-bgMain/50">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <select
+                  id="filtro-destino"
+                  value={filtroCMDestino}
+                  onChange={(e) => setFiltroCMDestino(e.target.value)}
+                  className="w-full appearance-none bg-white/70 border border-white/70 rounded-xl py-2.5 pl-10 pr-9 text-sm text-brand-bgMain focus:outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/40 transition-all cursor-pointer"
+                >
+                  <option value="">Todas las comisiones destino</option>
+                  {cmDestinosDisponibles.map((cm) => (
+                    <option key={cm} value={cm}>
+                      {cm}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-brand-bgMain/50">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
-          
-          <div className="w-full md:w-1/2 flex items-center justify-end gap-3 self-end h-10 text-xs text-brand-bgMain">
+
+          {/* Contador y limpieza */}
+          <div className="flex items-center justify-end gap-3 text-xs text-brand-bgMain">
             <span>
-              Encontrados: <strong className="text-white bg-brand-bgMain px-2.5 py-0.5 rounded font-bold text-xs">{bolsinesFiltrados.length}</strong> / {bolsinesLocalizados.length}
+              Encontrados:{' '}
+              <strong className="text-white bg-brand-bgMain px-2.5 py-0.5 rounded font-bold text-xs">
+                {bolsinesFiltrados.length}
+              </strong>{' '}
+              / {bolsinesLocalizados.length}
             </span>
-            {filtroNumeroPrecinto && (
+            {hayFiltroActivo && (
               <button
-                onClick={() => setFiltroNumeroPrecinto('')}
-                className="text-brand-primary hover:text-brand-primary/80 font-bold underline transition-colors"
+                onClick={limpiarFiltros}
+                className="text-brand-primary hover:text-brand-primary/80 font-bold underline rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"
               >
-                Limpiar filtro
+                Limpiar filtros
               </button>
             )}
           </div>
@@ -228,101 +312,53 @@ export const PantSegBolsines: React.FC = () => {
 
         {loading ? (
           <div className="flex-1 flex flex-col items-center justify-center py-24 gap-4">
-            <div className="w-10 h-10 rounded-full border-2 border-slate-200 border-t-brand-primary animate-spin"></div>
-            <p className="text-slate-500 text-xs font-bold tracking-wider animate-pulse">ESTABLECIENDO ENLACE SATELITAL...</p>
+            <div className="w-10 h-10 rounded-full border-2 border-brand-bgMain/15 border-t-brand-primary motion-safe:animate-spin"></div>
+            <p className="text-brand-bgMain/60 text-xs font-bold tracking-wider motion-safe:animate-pulse">
+              CARGANDO UBICACIONES...
+            </p>
           </div>
         ) : error ? (
-          <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 text-center max-w-md mx-auto my-12 shadow-sm">
-            <h3 className="text-base font-bold text-rose-800">Fallo de Enlace</h3>
+          <div className={`${glassPanel} rounded-2xl p-6 text-center max-w-md mx-auto my-12`}>
+            <div className="w-12 h-12 mx-auto rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mb-3">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M5.07 19h13.86a2 2 0 001.74-2.99l-6.93-12a2 2 0 00-3.48 0l-6.93 12A2 2 0 005.07 19z" />
+              </svg>
+            </div>
+            <h3 className="text-base font-bold text-rose-800">Error de Conexión</h3>
             <p className="text-xs text-rose-600 mt-1.5">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-brand-primary hover:bg-brand-primary/95 text-white rounded-lg text-xs font-bold transition-colors shadow-sm"
+              className="mt-4 px-4 py-2 bg-brand-primary hover:bg-brand-primary/90 text-white rounded-lg text-xs font-bold transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"
             >
               Reintentar
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
-            
-            {/* RENDERIZADO DEL MAPA (Radar Táctico Corporativo) */}
-            <div className="lg:col-span-2 bg-brand-bgContainer border border-brand-bgMain/20 rounded-2xl overflow-hidden flex flex-col shadow-sm relative min-h-[420px] lg:min-h-[500px]">
-              
+
+            {/* RENDERIZADO DEL MAPA (Radar Táctico sobre vidrio) */}
+            <div className={`lg:col-span-2 ${glassPanel} rounded-2xl overflow-hidden flex flex-col relative min-h-[420px] lg:min-h-[500px]`}>
+
               {/* Encabezado del radar */}
-              <div className="p-3.5 bg-brand-bgMain text-white border-b border-brand-bgContainer/30 flex items-center justify-between z-10">
+              <div className="p-3.5 border-b border-white/50 flex items-center justify-between z-10">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-brand-accent animate-pulse"></span>
-                  <span className="text-xs font-bold tracking-wider text-slate-100 uppercase">Mapa Satelital de Seguimiento</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-brand-accent motion-safe:animate-pulse shadow-sm shadow-brand-accent/60"></span>
+                  <span className="text-xs font-bold tracking-wider text-brand-bgMain uppercase">Mapa de Seguimiento</span>
                 </div>
-                <div className="text-xs text-brand-bgContainer/80 font-mono">COBERTURA: CM {nombreCM}</div>
+                <div className="hidden sm:block text-xs text-brand-bgMain/60 font-mono">CM {nombreCM}</div>
               </div>
 
-              {/* Contenedor del Radar */}
-              <div className="flex-1 relative bg-slate-50 overflow-hidden flex items-center justify-center">
-                {/* Cuadrícula táctica */}
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#8082A6_1px,transparent_1px),linear-gradient(to_bottom,#8082A6_1px,transparent_1px)] bg-[size:35px_35px] opacity-[0.08]"></div>
-                
-                {/* Anillos concéntricos de radar */}
-                <div className="absolute w-[300px] h-[300px] rounded-full border border-brand-bgContainer/20 pointer-events-none"></div>
-                <div className="absolute w-[500px] h-[500px] rounded-full border border-brand-bgContainer/15 pointer-events-none"></div>
-                <div className="absolute w-[700px] h-[700px] rounded-full border border-brand-bgContainer/10 pointer-events-none"></div>
-
-                {/* Ciudades simuladas de fondo */}
-                <div className="absolute left-[30%] top-[40%] text-brand-bgMain/60 font-sans font-bold text-xs pointer-events-none select-none flex flex-col items-center">
-                  <span className="w-2 h-2 rounded-full bg-brand-secondary"></span>
-                  <span>Córdoba Capital</span>
-                </div>
-                <div className="absolute left-[70%] top-[70%] text-brand-bgMain/60 font-sans font-bold text-xs pointer-events-none select-none flex flex-col items-center">
-                  <span className="w-2 h-2 rounded-full bg-brand-secondary"></span>
-                  <span>Villa María</span>
-                </div>
-
-                {/* Renderizar Marcadores de Bolsines */}
-                {bolsinesFiltrados.map((bolsin) => {
-                  const pos = obtenerPosicionRadar(bolsin.latitud, bolsin.longitud);
-                  const seleccionado = bolsinSeleccionado?.numeroPrecinto === bolsin.numeroPrecinto;
-                  const codigoStr = `BOL-${String(bolsin.numeroPrecinto).padStart(3, '0')}`;
-
-                  return (
-                    <button
-                      key={bolsin.numeroPrecinto}
-                      onClick={() => tomarSeleccionBolsin(bolsin)}
-                      style={{ left: pos.left, top: pos.top }}
-                      className="absolute -translate-x-1/2 -translate-y-1/2 group z-20 focus:outline-none"
-                    >
-                      {/* Efecto Glow Satélite */}
-                      <span className={`absolute -inset-2.5 rounded-full transition-all duration-300 ${
-                        seleccionado 
-                          ? 'bg-brand-primary/25 animate-ping' 
-                          : 'bg-brand-accent/20 group-hover:bg-brand-accent/40 group-hover:animate-ping'
-                      }`}></span>
-
-                      {/* Marcador Táctico */}
-                      <div className={`relative w-8 h-8 rounded-full flex items-center justify-center border-2 shadow-lg transition-all transform ${
-                        seleccionado
-                          ? 'bg-brand-primary border-white text-white scale-125 z-30 shadow-brand-primary/45'
-                          : 'bg-brand-accent border-white text-brand-bgMain font-bold group-hover:scale-115 group-hover:bg-brand-secondary group-hover:text-white'
-                      }`}>
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        </svg>
-                      </div>
-
-                      {/* Tooltip con número de precinto */}
-                      <span className={`absolute left-1/2 -translate-x-1/2 bottom-9 px-2 py-0.5 rounded text-xs font-bold font-sans border whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-40 ${
-                        seleccionado
-                          ? 'bg-brand-bgMain border-brand-primary text-white'
-                          : 'bg-white border-brand-bgContainer/40 text-brand-bgMain shadow-md'
-                      }`}>
-                        {codigoStr}
-                      </span>
-                    </button>
-                  );
-                })}
+              {/* Mapa funcional (Leaflet + OpenStreetMap) con la posición real de cada bolsín */}
+              <div className="flex-1 relative overflow-hidden">
+                <MapaBolsines
+                  bolsines={bolsinesFiltrados}
+                  bolsinSeleccionado={bolsinSeleccionado}
+                  onSeleccionarBolsin={tomarSeleccionBolsin}
+                />
               </div>
 
               {/* Leyenda y notas */}
-              <div className="p-3.5 bg-slate-50 border-t border-brand-bgContainer/25 text-xs text-brand-bgMain/70 flex justify-between items-center z-10 font-medium">
+              <div className="p-3.5 border-t border-white/50 text-xs text-brand-bgMain/70 flex flex-wrap gap-2 justify-between items-center z-10 font-medium">
                 <div className="flex items-center gap-3">
                   <span className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-brand-accent border border-white shadow-sm"></span>
@@ -339,9 +375,9 @@ export const PantSegBolsines: React.FC = () => {
 
             {/* PANEL LATERAL: DETALLES Y LISTADO */}
             <div className="flex flex-col gap-6">
-              
+
               {/* DETALLES DEL BOLSÍN SELECCIONADO */}
-              <div className="bg-brand-bgContainer border border-brand-bgMain/20 rounded-2xl p-5 shadow-sm flex flex-col min-h-[240px] justify-between">
+              <div className={`${glassPanel} rounded-2xl p-5 flex flex-col min-h-[240px] justify-between`}>
                 {bolsinSeleccionado ? (
                   <div className="flex flex-col h-full justify-between">
                     <div>
@@ -358,22 +394,24 @@ export const PantSegBolsines: React.FC = () => {
 
                       <div className="mt-4 space-y-2 text-xs">
                         <div className="flex justify-between items-center border-b border-brand-bgMain/10 py-1.5">
-                          <span className="text-brand-bgMain/80 font-semibold">Comisión Origen:</span>
+                          <span className="text-brand-bgMain/70 font-semibold">Comisión Origen:</span>
                           <span className="text-brand-bgMain font-bold">{nombreCM}</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-brand-bgMain/10 py-1.5">
-                          <span className="text-brand-bgMain/80 font-semibold">Destino Est.:</span>
-                          <span className="text-brand-bgMain font-bold">
-                            {bolsinSeleccionado.numeroPrecinto === 4 || bolsinSeleccionado.numeroPrecinto === 5 ? 'Río Cuarto' : 'Córdoba'}
-                          </span>
+                          <span className="text-brand-bgMain/70 font-semibold">CM Destino:</span>
+                          <span className="text-brand-bgMain font-bold">{bolsinSeleccionado.cmDestinoNombre}</span>
                         </div>
                         <div className="flex justify-between items-center border-b border-brand-bgMain/10 py-1.5">
-                          <span className="text-brand-bgMain/80 font-semibold">Coordenadas GPS:</span>
-                          <span className="text-brand-bgMain font-mono font-bold">{bolsinSeleccionado.latitud}, {bolsinSeleccionado.longitud}</span>
+                          <span className="text-brand-bgMain/70 font-semibold">Coordenadas GPS:</span>
+                          <span className="text-brand-bgMain font-mono font-bold tabular-nums">
+                            {bolsinSeleccionado.latitud}, {bolsinSeleccionado.longitud}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center py-1.5">
-                          <span className="text-brand-bgMain/80 font-semibold">Última Lectura:</span>
-                          <span className="text-brand-bgMain font-mono font-bold">{formatearFecha(bolsinSeleccionado.fechaHoraActualizacion)}</span>
+                          <span className="text-brand-bgMain/70 font-semibold">Última Lectura:</span>
+                          <span className="text-brand-bgMain font-mono font-bold tabular-nums">
+                            {formatearFecha(bolsinSeleccionado.fechaHoraActualizacion)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -381,9 +419,9 @@ export const PantSegBolsines: React.FC = () => {
                     <div className="mt-5 flex flex-col gap-2">
                       <button
                         onClick={() => setShowModal(true)}
-                        className="w-full py-2.5 bg-brand-primary hover:bg-brand-primary/90 text-white font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md"
+                        className="w-full py-2.5 bg-brand-primary hover:bg-brand-primary/90 active:scale-[0.98] text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                       >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
                         Notificar Ubicación
@@ -393,9 +431,9 @@ export const PantSegBolsines: React.FC = () => {
                         href={`https://www.google.com/maps?q=${bolsinSeleccionado.latitud},${bolsinSeleccionado.longitud}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="w-full py-2.5 bg-brand-bgMain hover:bg-brand-bgMain/90 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-md"
+                        className="w-full py-2.5 bg-brand-bgMain/90 hover:bg-brand-bgMain active:scale-[0.98] text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-bgMain/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                       >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                         </svg>
                         Ver en Google Maps
@@ -405,22 +443,22 @@ export const PantSegBolsines: React.FC = () => {
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
                     <div className="w-12 h-12 rounded-2xl bg-brand-bgMain/10 flex items-center justify-center text-brand-bgMain mb-3">
-                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                       </svg>
                     </div>
                     <p className="text-xs font-bold text-brand-bgMain">Ningún Bolsín Seleccionado</p>
                     <p className="text-xs text-brand-bgMain/70 mt-1 max-w-[200px] leading-relaxed">
-                      Haz clic sobre un pin del mapa satelital para visualizar sus datos de seguimiento.
+                      Haz clic sobre un pin del mapa para visualizar sus datos de seguimiento.
                     </p>
                   </div>
                 )}
               </div>
 
               {/* LISTADO DE BOLSINES FILTRADOS */}
-              <div className="bg-brand-bgContainer border border-brand-bgMain/20 rounded-2xl overflow-hidden flex flex-col flex-1 shadow-sm">
-                <div className="p-3.5 bg-brand-bgMain text-white border-b border-brand-bgMain/20">
-                  <h3 className="text-xs font-bold uppercase tracking-wider">
+              <div className={`${glassPanel} rounded-2xl overflow-hidden flex flex-col flex-1`}>
+                <div className="p-3.5 border-b border-white/50">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-brand-bgMain">
                     Bolsines Localizados ({bolsinesFiltrados.length})
                   </h3>
                 </div>
@@ -430,86 +468,90 @@ export const PantSegBolsines: React.FC = () => {
                     bolsinesFiltrados.map((bolsin) => {
                       const seleccionado = bolsinSeleccionado?.numeroPrecinto === bolsin.numeroPrecinto;
                       const codigoStr = `BOL-${String(bolsin.numeroPrecinto).padStart(3, '0')}`;
-                      const destinoSimulado = bolsin.numeroPrecinto === 4 || bolsin.numeroPrecinto === 5 ? 'Río Cuarto' : 'Córdoba';
-                      
+
                       return (
                         <button
                           key={bolsin.numeroPrecinto}
                           onClick={() => {
                             setBolsinSeleccionado(bolsin);
                           }}
-                          className={`w-full p-3.5 text-left flex items-center justify-between transition-colors outline-none focus:outline-none ${
+                          aria-pressed={seleccionado}
+                          className={`w-full p-3.5 text-left flex items-center justify-between transition-colors outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary ${
                             seleccionado
-                              ? 'bg-brand-bgMain text-white border-l-4 border-brand-primary pl-2.5 shadow-inner'
-                              : 'hover:bg-white/10 text-brand-bgMain'
+                              ? 'bg-brand-bgMain text-white border-l-4 border-brand-primary pl-2.5'
+                              : 'hover:bg-white/40 text-brand-bgMain'
                           }`}
                         >
                           <div className="flex items-center gap-2.5">
-                            <span className={`w-2 h-2 rounded-full ${seleccionado ? 'bg-brand-accent animate-pulse' : 'bg-brand-bgMain/40'}`}></span>
+                            <span className={`w-2 h-2 rounded-full ${seleccionado ? 'bg-brand-accent motion-safe:animate-pulse' : 'bg-brand-bgMain/40'}`}></span>
                             <div>
                               <span className={`font-sans font-bold text-xs ${seleccionado ? 'text-white' : 'text-brand-bgMain'}`}>
                                 {codigoStr}
                               </span>
-                              <div className={`text-xs mt-0.5 flex gap-1 ${seleccionado ? 'text-white/75' : 'text-brand-bgMain/70'}`}>
+                              <div className={`text-xs mt-0.5 flex gap-1 ${seleccionado ? 'text-white/75' : 'text-brand-bgMain/65'}`}>
                                 <span>Orig: {nombreCM}</span>
                                 <span>•</span>
-                                <span>Dest: {destinoSimulado}</span>
+                                <span>Dest: {bolsin.cmDestinoNombre}</span>
                               </div>
                             </div>
                           </div>
 
-                          <svg className={`w-4 h-4 transition-transform ${seleccionado ? 'text-white translate-x-0.5' : 'text-brand-bgMain/50'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg
+                            className={`w-4 h-4 transition-transform ${seleccionado ? 'text-white translate-x-0.5' : 'text-brand-bgMain/50'}`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            aria-hidden="true"
+                          >
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                           </svg>
                         </button>
                       );
                     })
                   ) : (
-                    <div className="py-8 text-center text-brand-bgMain/60 text-xs">
-                      Sin coincidencias para la búsqueda.
-                    </div>
+                    <div className="py-8 text-center text-brand-bgMain/55 text-xs">Sin coincidencias para la búsqueda.</div>
                   )}
                 </div>
               </div>
-
             </div>
-
           </div>
         )}
-
       </main>
 
       {/* DIÁLOGO FLOTANTE (MODAL DE CONFIRMACIÓN DE ENVÍO DE MAIL - Pasos 8 y 9) */}
       {showModal && bolsinSeleccionado && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center px-4">
-          <div 
-            className="absolute inset-0 bg-brand-bgMain/60 backdrop-blur-sm transition-opacity"
-            onClick={() => setShowModal(false)}
-          ></div>
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          <div className="absolute inset-0 bg-brand-bgMain/50 backdrop-blur-sm transition-opacity" onClick={() => setShowModal(false)}></div>
 
-          <div className="bg-brand-bgContainer border border-brand-bgMain/20 rounded-3xl p-6 max-w-md w-full relative z-90 shadow-2xl transform scale-100 transition-all">
-            
+          <div className="bg-white/80 backdrop-blur-2xl border border-white/70 rounded-3xl p-6 max-w-md w-full relative z-90 shadow-[0_20px_60px_rgba(68,51,79,0.35)] ring-1 ring-brand-bgMain/5 motion-safe:animate-[fadeIn_200ms_ease-out]">
+
             <div className="flex items-center gap-3 border-b border-brand-bgMain/10 pb-4">
-              <div className="w-10 h-10 rounded-xl bg-brand-bgMain/10 flex items-center justify-center text-brand-primary">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h4 className="font-bold text-sm text-brand-bgMain">Confirmar Envío de Correo</h4>
+              <h4 id="modal-title" className="font-bold text-sm text-brand-bgMain">Confirmar Envío de Correo</h4>
             </div>
 
             <div className="my-5 text-xs text-brand-bgMain/90 leading-relaxed">
               <p>
                 ¿Desea enviar un correo electrónico al Gerente de la Comisión Médica destino para informar la ubicación del Bolsín Nº{' '}
-                <strong className="text-brand-primary font-bold text-xs bg-brand-bgMain/10 border border-brand-primary/20 px-1.5 py-0.5 rounded">
+                <strong className="text-brand-primary font-bold text-xs bg-brand-primary/10 border border-brand-primary/20 px-1.5 py-0.5 rounded">
                   BOL-{String(bolsinSeleccionado.numeroPrecinto).padStart(3, '0')}
-                </strong>?
+                </strong>
+                ?
               </p>
-              
+
               {/* Atributo de fecha/hora de la última actualización visualizado textualmente (DD/MM/AAAA HH:MM) */}
-              <div className="mt-4 bg-slate-50 border border-brand-bgMain/15 rounded-xl p-3 flex items-center justify-between text-brand-bgMain/80 font-medium">
+              <div className="mt-4 bg-white/60 border border-white/70 rounded-xl p-3 flex items-center justify-between text-brand-bgMain/80 font-medium">
                 <span>Última actualización:</span>
-                <span className="text-brand-bgMain font-mono font-bold">{formatearFecha(bolsinSeleccionado.fechaHoraActualizacion)}</span>
+                <span className="text-brand-bgMain font-mono font-bold tabular-nums">{formatearFecha(bolsinSeleccionado.fechaHoraActualizacion)}</span>
               </div>
             </div>
 
@@ -517,19 +559,19 @@ export const PantSegBolsines: React.FC = () => {
               <button
                 disabled={sendingMail}
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 bg-brand-bgMain hover:bg-brand-bgMain/90 text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-brand-bgMain/90 hover:bg-brand-bgMain text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-bgMain/50"
               >
                 Cancelar
               </button>
-              
+
               <button
                 disabled={sendingMail}
                 onClick={tomarConfirmacionEnvioMail}
-                className="px-5 py-2 bg-brand-primary hover:bg-brand-primary/90 disabled:bg-slate-300 text-white font-bold rounded-xl text-xs transition-colors flex items-center gap-1.5 shadow-sm"
+                className="px-5 py-2 bg-brand-primary hover:bg-brand-primary/90 disabled:bg-brand-bgMain/30 text-white font-bold rounded-xl text-xs transition-colors flex items-center gap-1.5 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"
               >
                 {sendingMail ? (
                   <>
-                    <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full motion-safe:animate-spin"></span>
                     Despachando...
                   </>
                 ) : (
@@ -537,11 +579,9 @@ export const PantSegBolsines: React.FC = () => {
                 )}
               </button>
             </div>
-            
           </div>
         </div>
       )}
-
     </div>
   );
 };
