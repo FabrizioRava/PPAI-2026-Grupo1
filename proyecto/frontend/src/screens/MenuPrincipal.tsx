@@ -38,22 +38,12 @@ export const MenuPrincipal: React.FC<MenuPrincipalProps> = ({ usuario, onConsult
       ),
     },
     {
-      titulo: 'Registrar cambio de estado',
-      descripcion: 'Actualizá el estado de un bolsín (Enviado, Entregado, Recibido).',
+      titulo: 'Registrar recepción de bolsín',
+      descripcion: 'Registrá la recepción de un bolsín en la Comisión Médica destino.',
       disponible: false,
       icono: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-      ),
-    },
-    {
-      titulo: 'Reportes de seguimiento',
-      descripcion: 'Generá reportes históricos de envíos y entregas.',
-      disponible: false,
-      icono: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
         </svg>
       ),
     },
