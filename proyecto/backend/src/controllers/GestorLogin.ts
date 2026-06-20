@@ -42,7 +42,7 @@ export class GestorLogin {
       const sesion = Sesion.iniciarSesion(usuario);
 
       res.status(200).json({
-        token: sesion.token,
+        token: sesion.getToken(),
         usuario: usuario.toJSON(),
       });
     } catch (error: any) {
@@ -76,7 +76,7 @@ export class GestorLogin {
         res.status(401).json({ error: 'No hay una sesión activa.' });
         return;
       }
-      res.status(200).json({ usuario: sesion.usuario.toJSON() });
+      res.status(200).json({ usuario: sesion.getUsuario().toJSON() });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

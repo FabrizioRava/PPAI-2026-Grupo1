@@ -39,14 +39,14 @@ export class GestorSegBolsines {
       const modeloGPS = dispositivo.getModeloGPS();
 
       // Paso 4-5 del diagrama: InterfazGPSTracker.obtenerUbicacionBolsin()
-      const localizacion = GPSTracker.obtenerUbicacionBolsin(bolsin.codigo);
+      const localizacion = GPSTracker.obtenerUbicacionBolsin(bolsin.getCodigo());
       void marcaGPS; void modeloGPS; // datos del dispositivo consultados según el diagrama
 
       // Paso 3 del diagrama: número de precinto del bolsín
       const numeroPrecinto = bolsin.getNumeroPrecinto();
 
       // Obtenemos el nombre del estado actual del bolsín
-      const estadoActual = bolsin.getEstadoActual()?.nombre || 'Enviado';
+      const estadoActual = bolsin.getEstadoActual()?.getNombre() || 'Enviado';
 
       // Paso 3 del diagrama: obtenerCMDestino() -> getNombreCM() / getCodigoCM()
       const cmDestino = bolsin.obtenerCMDestino();
@@ -80,7 +80,7 @@ export class GestorSegBolsines {
       const cmUsuario = sesion.buscarCMUsuarioLogueado();
 
       // 2. buscarBolsines()
-      const bolsinesFiltrados = GestorSegBolsines.buscarBolsines(cmUsuario.id);
+      const bolsinesFiltrados = GestorSegBolsines.buscarBolsines(cmUsuario.getId());
 
       // 3. buscarDatosLocalizacionBolsines()
       const bolsinesConUbicacion = GestorSegBolsines.buscarDatosLocalizacionBolsines(bolsinesFiltrados);
@@ -151,7 +151,7 @@ export class GestorSegBolsines {
       // 1. Encontrar el bolsín seleccionado
       // Flujo alternativo A2: si el precinto ingresado no corresponde a ningún bolsín, se informa.
       const precintoStr = `BOL-${String(numeroPrecinto).padStart(3, '0')}`;
-      const bolsin = bolsines.find(b => b.codigo === precintoStr || b.id === numeroPrecinto);
+      const bolsin = bolsines.find(b => b.getCodigo() === precintoStr || b.getId() === numeroPrecinto);
 
       if (!bolsin) {
         res.status(404).json({ error: `No se encontró el bolsín con precinto ${numeroPrecinto}` });
@@ -165,13 +165,13 @@ export class GestorSegBolsines {
       const mailGerente = GestorSegBolsines.buscarMailGerente(cmDestino);
       if (!mailGerente) {
         res.status(404).json({
-          error: `No se encontró un Gerente con correo para la Comisión Médica destino (${cmDestino.nombre}).`
+          error: `No se encontró un Gerente con correo para la Comisión Médica destino (${cmDestino.getNombreCM()}).`
         });
         return;
       }
 
       // Registrar una lectura GPS fresca (reporte AHORA): refresca la fechaHoraActualizacion
-      const coordenadas = GPSTracker.registrarNuevoReporte(bolsin.codigo);
+      const coordenadas = GPSTracker.registrarNuevoReporte(bolsin.getCodigo());
 
       // Paso 11: Ejecutar enviarMailGerente() con la fecha y hora de la última actualización
       GestorSegBolsines.enviarMailGerente(

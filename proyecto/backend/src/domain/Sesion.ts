@@ -2,11 +2,11 @@ import { Usuario } from './Usuario';
 import { ComisionMedica } from './ComisionMedica';
 
 export class Sesion {
-  id: number;
-  usuario: Usuario;
-  activa: boolean;
-  fechaInicio: Date;
-  token: string;
+  private id: number;
+  private usuario: Usuario;
+  private activa: boolean;
+  private fechaInicio: Date;
+  private token: string;
 
   // Repositorio en memoria de sesiones activas, indexado por token.
   // Al migrar a DB se reemplaza por una tabla de sesiones / store de tokens.
@@ -21,6 +21,48 @@ export class Sesion {
     this.token = token;
   }
 
+  // --- Getters / Setters ---
+  getId(): number {
+    return this.id;
+  }
+
+  setId(id: number): void {
+    this.id = id;
+  }
+
+  getUsuario(): Usuario {
+    return this.usuario;
+  }
+
+  setUsuario(usuario: Usuario): void {
+    this.usuario = usuario;
+  }
+
+  estaActiva(): boolean {
+    return this.activa;
+  }
+
+  setActiva(activa: boolean): void {
+    this.activa = activa;
+  }
+
+  getFechaInicio(): Date {
+    return this.fechaInicio;
+  }
+
+  setFechaInicio(fechaInicio: Date): void {
+    this.fechaInicio = fechaInicio;
+  }
+
+  getToken(): string {
+    return this.token;
+  }
+
+  setToken(token: string): void {
+    this.token = token;
+  }
+
+  // --- Comportamiento ---
   // Crea y registra una nueva sesión activa para el usuario autenticado.
   static iniciarSesion(usuario: Usuario): Sesion {
     const token = `sesion-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
