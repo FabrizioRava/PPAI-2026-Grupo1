@@ -2,17 +2,11 @@ import { Request, Response } from 'express';
 import { Sesion } from '../domain/Sesion';
 import { ComisionMedica } from '../domain/ComisionMedica';
 import { Bolsin } from '../domain/Bolsin';
-import { bolsines, empleadosCordoba } from '../mockData';
+import { bolsines, empleados } from '../mockData';
 import { GPSTracker } from '../services/GPSTracker';
+import { GestorLogin } from './GestorLogin';
 
 export class GestorSegBolsines {
-  /**
-   * Paso 2: Busca la CM del usuario logueado en la sesión activa.
-   */
-  static buscarCMUsuarioLogueado(): ComisionMedica | null {
-    return Sesion.buscarCMUsuarioLogueado();
-  }
-
   /**
    * Paso 3: Filtra los bolsines simulados comparando si su CM de origen
    * es la del usuario y si su estado es 'Enviado'.
@@ -74,12 +68,16 @@ export class GestorSegBolsines {
    */
   static getBolsinesActivos(req: Request, res: Response): void {
     try {
-      // 1. buscarCMUsuarioLogueado()
-      const cmUsuario = GestorSegBolsines.buscarCMUsuarioLogueado();
-      if (!cmUsuario) {
+      // Límite HTTP: obtener la sesión activa a partir del token (no es un mensaje del diagrama)
+      const token = GestorLogin.obtenerToken(req);
+      const sesion = Sesion.buscarPorToken(token);
+      if (!sesion) {
         res.status(401).json({ error: 'No hay una sesión activa con un usuario logueado.' });
         return;
       }
+
+      // Paso 2 del diagrama: G -> S: buscarCMUsuarioLogueado()
+      const cmUsuario = sesion.buscarCMUsuarioLogueado();
 
       // 2. buscarBolsines()
       const bolsinesFiltrados = GestorSegBolsines.buscarBolsines(cmUsuario.id);
@@ -106,7 +104,7 @@ export class GestorSegBolsines {
    */
   static buscarMailGerente(cmDestino: ComisionMedica): string | null {
     // Diagrama (paso 10): Em -> esTuCM() / esGerenteCMDestino() -> R: esGerente()
-    const gerente = empleadosCordoba.find(e =>
+    const gerente = empleados.find(e =>
       e.esTuCM(cmDestino) && e.esGerenteCMDestino()
     );
 
@@ -137,6 +135,13 @@ export class GestorSegBolsines {
    */
   static notificarUbicacionBolsin(req: Request, res: Response): void {
     try {
+      // Requiere una sesión activa (token de un empleado logueado)
+      const token = GestorLogin.obtenerToken(req);
+      if (!Sesion.buscarPorToken(token)) {
+        res.status(401).json({ error: 'No hay una sesión activa con un usuario logueado.' });
+        return;
+      }
+
       const { numeroPrecinto } = req.body;
       if (numeroPrecinto === undefined) {
         res.status(400).json({ error: 'El parámetro numeroPrecinto es requerido en el cuerpo (body).' });
@@ -144,6 +149,7 @@ export class GestorSegBolsines {
       }
 
       // 1. Encontrar el bolsín seleccionado
+      // Flujo alternativo A2: si el precinto ingresado no corresponde a ningún bolsín, se informa.
       const precintoStr = `BOL-${String(numeroPrecinto).padStart(3, '0')}`;
       const bolsin = bolsines.find(b => b.codigo === precintoStr || b.id === numeroPrecinto);
 
@@ -158,14 +164,14 @@ export class GestorSegBolsines {
       // Paso 10: Ejecutar buscarMailGerente()
       const mailGerente = GestorSegBolsines.buscarMailGerente(cmDestino);
       if (!mailGerente) {
-        res.status(404).json({ 
-          error: `No se encontró un Gerente con correo para la Comisión Médica destino (${cmDestino.nombre}).` 
+        res.status(404).json({
+          error: `No se encontró un Gerente con correo para la Comisión Médica destino (${cmDestino.nombre}).`
         });
         return;
       }
 
-      // Obtener ubicación GPS actual y su fechaHoraActualizacion correspondiente
-      const coordenadas = GPSTracker.obtenerUbicacionBolsin(bolsin.codigo);
+      // Registrar una lectura GPS fresca (reporte AHORA): refresca la fechaHoraActualizacion
+      const coordenadas = GPSTracker.registrarNuevoReporte(bolsin.codigo);
 
       // Paso 11: Ejecutar enviarMailGerente() con la fecha y hora de la última actualización
       GestorSegBolsines.enviarMailGerente(
@@ -176,10 +182,13 @@ export class GestorSegBolsines {
         coordenadas.fechaHoraActualizacion.toISOString()
       );
 
-      // Responder al frontend con un estado HTTP 200 y JSON de éxito
+      // Responder al frontend con el resultado y la lectura fresca para refrescar la UI
       res.status(200).json({
         exito: true,
-        mensaje: 'Caso de Uso 31 ejecutado con éxito'
+        mensaje: 'Caso de Uso 31 ejecutado con éxito',
+        fechaHoraActualizacion: coordenadas.fechaHoraActualizacion.toISOString(),
+        latitud: coordenadas.latitud,
+        longitud: coordenadas.longitud
       });
     } catch (error: any) {
       res.status(500).json({ error: error.message });

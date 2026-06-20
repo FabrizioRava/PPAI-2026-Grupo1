@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapaBolsines } from '../components/MapaBolsines';
+import { API_BASE, authHeaders, UsuarioDTO } from '../api';
 
 // Interfaz para la entidad Bolsín con los datos localizados
 export interface Bolsin {
@@ -18,6 +19,8 @@ export interface ApiResponse {
 }
 
 export interface PantSegBolsinesProps {
+  // Empleado logueado en la sesión actual (determina la CM de origen).
+  usuario: UsuarioDTO;
   // Permite volver a la pantalla de menú (Paso 1: opConsultarUbicBolsines abre/cierra esta ventana)
   onVolver?: () => void;
 }
@@ -26,9 +29,10 @@ export interface PantSegBolsinesProps {
 const glassPanel =
   'bg-white/55 backdrop-blur-xl border border-white/60 shadow-[0_8px_32px_rgba(68,51,79,0.12)] ring-1 ring-brand-bgMain/5';
 
-export const PantSegBolsines: React.FC<PantSegBolsinesProps> = ({ onVolver }) => {
+export const PantSegBolsines: React.FC<PantSegBolsinesProps> = ({ usuario, onVolver }) => {
   // Estados requeridos por el diseño y el diagrama de secuencia
-  const [nombreCM, setNombreCM] = useState<string>('');
+  // Inicializa con la CM del usuario logueado; el server confirma el valor al responder.
+  const [nombreCM, setNombreCM] = useState<string>(usuario.comisionMedica.nombre);
   const [bolsinesLocalizados, setBolsinesLocalizados] = useState<Bolsin[]>([]);
   const [filtroNumeroPrecinto, setFiltroNumeroPrecinto] = useState<string>('');
   const [filtroCMDestino, setFiltroCMDestino] = useState<string>(''); // '' = todas las CM destino
@@ -47,7 +51,9 @@ export const PantSegBolsines: React.FC<PantSegBolsinesProps> = ({ onVolver }) =>
     const obtenerBolsinesActivos = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:3000/api/bolsines/activos');
+        const response = await fetch(`${API_BASE}/api/bolsines/activos`, {
+          headers: { ...authHeaders() },
+        });
         if (!response.ok) {
           throw new Error(`Error en el servidor: ${response.statusText}`);
         }
@@ -81,18 +87,34 @@ export const PantSegBolsines: React.FC<PantSegBolsinesProps> = ({ onVolver }) =>
 
     try {
       setSendingMail(true);
-      const response = await fetch('http://localhost:3000/api/bolsines/notificar', {
+      const response = await fetch(`${API_BASE}/api/bolsines/notificar`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...authHeaders(),
         },
         body: JSON.stringify({
           numeroPrecinto: bolsinSeleccionado.numeroPrecinto,
         }),
       });
 
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error('Error al enviar la notificación. Inténtalo nuevamente.');
+        throw new Error(data.error || 'Error al enviar la notificación. Inténtalo nuevamente.');
+      }
+
+      // Refrescar el horario (y coords) del bolsín con la lectura fresca devuelta por el server
+      if (data.fechaHoraActualizacion) {
+        const actualizado: Bolsin = {
+          ...bolsinSeleccionado,
+          fechaHoraActualizacion: data.fechaHoraActualizacion,
+          latitud: data.latitud ?? bolsinSeleccionado.latitud,
+          longitud: data.longitud ?? bolsinSeleccionado.longitud,
+        };
+        setBolsinSeleccionado(actualizado);
+        setBolsinesLocalizados((prev) =>
+          prev.map((b) => (b.numeroPrecinto === actualizado.numeroPrecinto ? actualizado : b))
+        );
       }
 
       // Si fue exitoso, mostramos un aviso de éxito
@@ -194,10 +216,11 @@ export const PantSegBolsines: React.FC<PantSegBolsinesProps> = ({ onVolver }) =>
       <header className={`sticky top-0 z-50 ${glassPanel} border-x-0 border-t-0 rounded-none`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
+            {/* Flujo alternativo A4: el EB cancela la ejecución del caso de uso y vuelve al menú principal */}
             {onVolver && (
               <button
                 onClick={onVolver}
-                aria-label="Volver al menú principal"
+                aria-label="Volver al menú principal (cancelar caso de uso)"
                 className="w-9 h-9 -ml-1 shrink-0 rounded-xl flex items-center justify-center text-brand-bgMain hover:bg-brand-bgMain/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -221,7 +244,7 @@ export const PantSegBolsines: React.FC<PantSegBolsinesProps> = ({ onVolver }) =>
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 motion-safe:animate-pulse shadow-sm shadow-emerald-500/50"></span>
             <span className="hidden sm:inline text-xs text-brand-bgMain/70 font-medium">Comisión Médica de Origen:</span>
             <span className="text-xs font-bold text-white bg-gradient-to-tr from-brand-primary to-brand-secondary px-2.5 py-1.5 rounded-lg shadow-sm">
-              {nombreCM || 'Villa María'}
+              {nombreCM}
             </span>
           </div>
         </div>
@@ -332,6 +355,28 @@ export const PantSegBolsines: React.FC<PantSegBolsinesProps> = ({ onVolver }) =>
             >
               Reintentar
             </button>
+          </div>
+        ) : bolsinesLocalizados.length === 0 ? (
+          /* Flujo alternativo A1: no se encontraron bolsines en estado Enviado para la CM del usuario */
+          <div className={`${glassPanel} rounded-2xl p-8 text-center max-w-md mx-auto my-12`}>
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-brand-bgMain/10 text-brand-bgMain flex items-center justify-center mb-4">
+              <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+            </div>
+            <h3 className="text-base font-bold text-brand-bgMain">Sin bolsines en tránsito</h3>
+            <p className="text-xs text-brand-bgMain/70 mt-2 leading-relaxed">
+              No se encontraron bolsines en estado <strong>Enviado</strong> para la Comisión Médica{' '}
+              <strong>{nombreCM}</strong>. No hay ubicaciones que mostrar en este momento.
+            </p>
+            {onVolver && (
+              <button
+                onClick={onVolver}
+                className="mt-5 px-4 py-2 bg-brand-bgMain/90 hover:bg-brand-bgMain text-white rounded-lg text-xs font-bold transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-bgMain/50"
+              >
+                Volver al menú
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
@@ -493,6 +538,12 @@ export const PantSegBolsines: React.FC<PantSegBolsinesProps> = ({ onVolver }) =>
                                 <span>•</span>
                                 <span>Dest: {bolsin.cmDestinoNombre}</span>
                               </div>
+                              <div className={`text-xs mt-0.5 font-mono tabular-nums flex items-center gap-1 ${seleccionado ? 'text-white/75' : 'text-brand-bgMain/55'}`}>
+                                <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>{formatearFecha(bolsin.fechaHoraActualizacion)}</span>
+                              </div>
                             </div>
                           </div>
 
@@ -509,7 +560,10 @@ export const PantSegBolsines: React.FC<PantSegBolsinesProps> = ({ onVolver }) =>
                       );
                     })
                   ) : (
-                    <div className="py-8 text-center text-brand-bgMain/55 text-xs">Sin coincidencias para la búsqueda.</div>
+                    /* Flujo alternativo A2: no se encontró ningún bolsín con el precinto / CM destino ingresados */
+                    <div className="py-8 text-center text-brand-bgMain/55 text-xs">
+                      No se encontró ningún bolsín con el número de precinto ingresado.
+                    </div>
                   )}
                 </div>
               </div>
@@ -556,6 +610,7 @@ export const PantSegBolsines: React.FC<PantSegBolsinesProps> = ({ onVolver }) =>
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-brand-bgMain/10">
+              {/* Flujo alternativo A5: el EB no selecciona la opción de enviar el correo (cierra sin notificar) */}
               <button
                 disabled={sendingMail}
                 onClick={() => setShowModal(false)}

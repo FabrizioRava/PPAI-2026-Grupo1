@@ -15,12 +15,21 @@ export class GPSTracker {
     'BOL-4505': { lat: -31.4225, lng: -64.1851, desfasajeMinutos: 4 },   // Entrando a Córdoba, reporte hace 4 minutos
   };
 
+  // Últimos reportes "frescos" registrados (p. ej. al notificar). Persisten en memoria
+  // para que las siguientes lecturas reflejen la hora actualizada. A futuro: tabla en DB.
+  private static ultimosReportes: Record<string, DatosLocalizacion> = {};
+
   /**
    * Diagrama (paso 4-5): InterfazGPSTracker.obtenerUbicacionBolsin()
    * Simula la obtención de coordenadas GPS de un hardware real (XTR-4500L)
    * incorporando una fecha y hora de reporte distinta para cada bolsín.
    */
   static obtenerUbicacionBolsin(numeroPrecinto: string): DatosLocalizacion {
+    // Si el dispositivo ya emitió un reporte fresco, se devuelve esa última lectura.
+    if (GPSTracker.ultimosReportes[numeroPrecinto]) {
+      return GPSTracker.ultimosReportes[numeroPrecinto];
+    }
+
     if (GPSTracker.rutaLookup[numeroPrecinto]) {
       const coord = GPSTracker.rutaLookup[numeroPrecinto];
       const fechaReporte = new Date(Date.now() - coord.desfasajeMinutos * 60 * 1000);
@@ -54,5 +63,20 @@ export class GPSTracker {
       fechaHoraActualizacion: fechaReporte,
       modeloDispositivo: 'XTR-4500L'
     };
+  }
+
+  /**
+   * Simula que el dispositivo emite un nuevo reporte AHORA mismo (lectura fresca).
+   * Mantiene las coordenadas de la última posición conocida y refresca la fecha/hora.
+   * Se usa, por ejemplo, al notificar la ubicación de un bolsín (CU31).
+   */
+  static registrarNuevoReporte(numeroPrecinto: string): DatosLocalizacion {
+    const ubicacionActual = GPSTracker.obtenerUbicacionBolsin(numeroPrecinto);
+    const reporteFresco: DatosLocalizacion = {
+      ...ubicacionActual,
+      fechaHoraActualizacion: new Date(), // reporte tomado ahora
+    };
+    GPSTracker.ultimosReportes[numeroPrecinto] = reporteFresco;
+    return reporteFresco;
   }
 }

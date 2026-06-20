@@ -2,7 +2,6 @@ import { Rol } from './domain/Rol';
 import { ComisionMedica } from './domain/ComisionMedica';
 import { Empleado } from './domain/Empleado';
 import { Usuario } from './domain/Usuario';
-import { Sesion } from './domain/Sesion';
 import { EstadoBolsin } from './domain/EstadoBolsin';
 import { CambioDeEstadoBolsin } from './domain/CambioDeEstadoBolsin';
 import { Bolsin } from './domain/Bolsin';
@@ -27,66 +26,35 @@ export const estadoEntregado = new EstadoBolsin(2, 'Entregado');
 export const estadoRecibido = new EstadoBolsin(3, 'Recibido');
 export const estadoCreado = new EstadoBolsin(4, 'Creado');
 
-// Empleado y Usuario Logueado (Villa María)
-export const empleadoLogueado = new Empleado(
-  1,
-  'Juan',
-  'Pérez',
-  'jperez@srt.gob.ar',
-  rolAdministrativo,
-  cmVillaMaria
-);
+// --- EMPLEADOS (padrón de cada Comisión Médica) ---
+// Empleado de Villa María (origen de los bolsines del CU36)
+export const empleadoVillaMaria = new Empleado(1, 'Juan', 'Pérez', 'jperez@srt.gob.ar', rolAdministrativo, cmVillaMaria);
 
-export const usuarioLogueado = new Usuario(
-  1,
-  'jperez',
-  empleadoLogueado
-);
+// Empleados de CM Córdoba
+const empleadoCordobaGerente = new Empleado(2, 'Ana', 'Gómez', 'agomez@srt.gob.ar', rolGerente, cmCordoba);
+const empleadoCordobaAdmin = new Empleado(3, 'Luis', 'Martínez', 'lmartinez@srt.gob.ar', rolAdministrativo, cmCordoba);
 
-export const sesionActiva = new Sesion(
-  1,
-  usuarioLogueado,
-  true,
-  new Date()
-);
+// Empleados de CM Río Cuarto
+const empleadoRioCuartoGerente = new Empleado(4, 'Carlos', 'Ruiz', 'cruiz@srt.gob.ar', rolGerente, cmRioCuarto);
+const empleadoRioCuartoAdmin = new Empleado(5, 'Sofía', 'Peralta', 'speralta@srt.gob.ar', rolAdministrativo, cmRioCuarto);
 
-// Empleados de las comisiones médicas de destino (Córdoba y Río Cuarto)
-// Se exporta como empleadosCordoba para mantener compatibilidad de importaciones
-export const empleadosCordoba: Empleado[] = [
-  // Gerente y Administrativo de CM Córdoba
-  new Empleado(
-    2,
-    'Ana',
-    'Gómez',
-    'agomez@srt.gob.ar',
-    rolGerente,
-    cmCordoba
-  ),
-  new Empleado(
-    3,
-    'Luis',
-    'Martínez',
-    'lmartinez@srt.gob.ar',
-    rolAdministrativo,
-    cmCordoba
-  ),
-  // Gerente de CM Río Cuarto
-  new Empleado(
-    4,
-    'Carlos',
-    'Ruiz',
-    'cruiz@srt.gob.ar',
-    rolGerente,
-    cmRioCuarto
-  ),
-  new Empleado(
-    5,
-    'Sofía',
-    'Peralta',
-    'speralta@srt.gob.ar',
-    rolAdministrativo,
-    cmRioCuarto
-  )
+// Padrón completo de empleados (todas las CM). Usado para buscar al Gerente de la CM destino.
+export const empleados: Empleado[] = [
+  empleadoVillaMaria,
+  empleadoCordobaGerente,
+  empleadoCordobaAdmin,
+  empleadoRioCuartoGerente,
+  empleadoRioCuartoAdmin,
+];
+
+// --- USUARIOS (credenciales moqueadas) ---
+// Contraseña común de demo: "1234". Al migrar a DB se reemplaza por usuarios reales con hash.
+export const usuarios: Usuario[] = [
+  new Usuario(1, 'jperez', '1234', empleadoVillaMaria),
+  new Usuario(2, 'agomez', '1234', empleadoCordobaGerente),
+  new Usuario(3, 'lmartinez', '1234', empleadoCordobaAdmin),
+  new Usuario(4, 'cruiz', '1234', empleadoRioCuartoGerente),
+  new Usuario(5, 'speralta', '1234', empleadoRioCuartoAdmin),
 ];
 
 // Bolsines (Mínimo 10 bolsines distribuidos según requerimiento)

@@ -1,13 +1,18 @@
 import React from 'react';
+import { UsuarioDTO } from '../api';
 
 // Lenguaje glassmorphism compartido con el resto de la app (panel de vidrio esmerilado)
 const glassPanel =
   'bg-white/55 backdrop-blur-xl border border-white/60 shadow-[0_8px_32px_rgba(68,51,79,0.12)] ring-1 ring-brand-bgMain/5';
 
 export interface MenuPrincipalProps {
+  // Empleado logueado en la sesión actual.
+  usuario: UsuarioDTO;
   // Paso 1 del diagrama: EB selecciona la opción "Consultar ubicación de bolsines"
   // -> dispara opConsultarUbicBolsines() y habilita la ventana de seguimiento.
   onConsultarUbicacionBolsines: () => void;
+  // Cierra la sesión y vuelve al login.
+  onCerrarSesion: () => void;
 }
 
 interface OpcionMenu {
@@ -18,7 +23,7 @@ interface OpcionMenu {
   icono: React.ReactNode;
 }
 
-export const MenuPrincipal: React.FC<MenuPrincipalProps> = ({ onConsultarUbicacionBolsines }) => {
+export const MenuPrincipal: React.FC<MenuPrincipalProps> = ({ usuario, onConsultarUbicacionBolsines, onCerrarSesion }) => {
   const opciones: OpcionMenu[] = [
     {
       titulo: 'Consultar ubicación de bolsines',
@@ -79,9 +84,23 @@ export const MenuPrincipal: React.FC<MenuPrincipalProps> = ({ onConsultarUbicaci
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 motion-safe:animate-pulse shadow-sm shadow-emerald-500/50"></span>
-            <span className="hidden sm:inline text-xs text-brand-bgMain/70 font-medium">Sesión activa</span>
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex flex-col items-end leading-tight">
+              <span className="text-xs font-bold text-brand-bgMain">{usuario.nombre} {usuario.apellido}</span>
+              <span className="text-[0.625rem] text-brand-bgMain/60 font-medium">{usuario.rol} • {usuario.comisionMedica.nombre}</span>
+            </div>
+            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-primary to-brand-secondary flex items-center justify-center text-white text-xs font-bold shadow-sm" aria-hidden="true">
+              {usuario.nombre.charAt(0)}{usuario.apellido.charAt(0)}
+            </div>
+            <button
+              onClick={onCerrarSesion}
+              className="flex items-center gap-1.5 text-xs font-bold text-brand-bgMain/70 hover:text-brand-primary px-2.5 py-1.5 rounded-lg hover:bg-brand-bgMain/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span className="hidden sm:inline">Salir</span>
+            </button>
           </div>
         </div>
       </header>
