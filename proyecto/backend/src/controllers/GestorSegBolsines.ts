@@ -188,6 +188,18 @@ export class GestorSegBolsines {
   
   // Endpoint obtenerBolsines (sin Filtrar)
   // http://localhost:3000/api/bolsines
+  /**
+   *@openapi
+   * /api/bolsines:
+   *   get:
+   *     summary: Obtiene el universo total de bolsines
+   *     description: Retorna una lista con la totalidad de los bolsines simulados, acoplándoles sus datos de localización GPS actual.
+   *     responses:
+   *       200:
+   *         description: Operación exitosa. Devuelve la lista de bolsines.
+   *       500:
+   *         description: Error interno del servidor.
+   */
   static getTodosLosBolsines(req: Request, res: Response): void {
     try {
       // Buscamos la CM del usuario logueado
