@@ -34,7 +34,6 @@ control "<b><u>:GestorSegBolsines" as G
 entity "<b><u>A:Sesion" as S
 entity "<b><u>L:Usuario" as U
 entity "<b><u>L:Empleado" as E
-entity "<b><u>G:Empleado" as GE
 
 entity "<b><u>:Bolsin" as B #FF5B00
 entity "<b><u>:DispositivoGPS" as DGPS #C5EBEF
@@ -65,7 +64,7 @@ G -> G ++ : buscarCMUsuarioLogueado()
 deactivate G
     G -> S ++ : buscarCMUsuarioLogueado()
         S -> U ++ : obtenerEmpleado()
-            U -> E ++ : obtenerCodigoCM()
+            U -> E ++ : obtenerCM()
                 E -> CM ++ : getNombreCM()
                 deactivate CM
                 E -> CM ++ : getCodigoCM()
@@ -152,17 +151,18 @@ activate G
 
 G -> G ++: buscarMailGerente()
 deactivate G
-    group Empleados CM Destino [mientras haya empleados y no se encuentre el gerente del CM destino]
+    group Empleados CM Destino [mientras haya empleados y no se encuentre el gerente de la CM destino]
         G -> Em ++ #FF5B00: esTuCM()
         deactivate Em
+        
         G -> Em ++ #FF5B00: esGerenteCMDestino()
             Em -> R ++: esGerente()
             deactivate R
         deactivate Em
+        
+        G -> Em ++ #FF5B00: getMail()
+        deactivate Em
     end
-
-G -> GE ++: getMail()
-deactivate GE
 
 G -> G: enviarMailGerente()
 activate G
