@@ -1,10 +1,10 @@
 import { EstadoBolsin } from './EstadoBolsin';
 
 export class CambioDeEstadoBolsin {
-  id: number;
-  estadoBolsin: EstadoBolsin;
-  fechaHoraInicio: Date;
-  fechaHoraFin: Date | null;
+  private id: number;
+  private estadoBolsin: EstadoBolsin;
+  private fechaHoraInicio: Date;
+  private fechaHoraFin: Date | null;
 
   constructor(
     id: number,
@@ -18,6 +18,40 @@ export class CambioDeEstadoBolsin {
     this.fechaHoraFin = fechaHoraFin;
   }
 
+  // --- Getters / Setters ---
+  getId(): number {
+    return this.id;
+  }
+
+  setId(id: number): void {
+    this.id = id;
+  }
+
+  getEstadoBolsin(): EstadoBolsin {
+    return this.estadoBolsin;
+  }
+
+  setEstadoBolsin(estadoBolsin: EstadoBolsin): void {
+    this.estadoBolsin = estadoBolsin;
+  }
+
+  getFechaHoraInicio(): Date {
+    return this.fechaHoraInicio;
+  }
+
+  setFechaHoraInicio(fechaHoraInicio: Date): void {
+    this.fechaHoraInicio = fechaHoraInicio;
+  }
+
+  getFechaHoraFin(): Date | null {
+    return this.fechaHoraFin;
+  }
+
+  setFechaHoraFin(fechaHoraFin: Date | null): void {
+    this.fechaHoraFin = fechaHoraFin;
+  }
+
+  // --- Comportamiento ---
   sosActual(): boolean {
     return this.fechaHoraInicio !== null && this.fechaHoraFin === null;
   }

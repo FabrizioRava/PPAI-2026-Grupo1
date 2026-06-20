@@ -4,14 +4,14 @@ import { EstadoBolsin } from './EstadoBolsin';
 import { DispositivoGPS } from './DispositivoGPS';
 
 export class Bolsin {
-  id: number;
-  codigo: string;
-  comisionMedicaOrigen: ComisionMedica;
-  comisionMedicaDestino: ComisionMedica;
-  cambiosDeEstado: CambioDeEstadoBolsin[];
-  dispositivoGPS: DispositivoGPS;
-  numeroPrecinto: number;
-  numeroBolsin: number;
+  private id: number;
+  private codigo: string;
+  private comisionMedicaOrigen: ComisionMedica;
+  private comisionMedicaDestino: ComisionMedica;
+  private cambiosDeEstado: CambioDeEstadoBolsin[];
+  private dispositivoGPS: DispositivoGPS;
+  private numeroPrecinto: number;
+  private numeroBolsin: number;
 
   constructor(
     id: number,
@@ -19,7 +19,9 @@ export class Bolsin {
     comisionMedicaOrigen: ComisionMedica,
     comisionMedicaDestino: ComisionMedica,
     cambiosDeEstado: CambioDeEstadoBolsin[],
-    dispositivoGPS: DispositivoGPS = new DispositivoGPS()
+    dispositivoGPS: DispositivoGPS = new DispositivoGPS(),
+    numeroPrecinto: number,
+    numeroBolsin?: number // Parámetro opcional para evitar romper mockData anteriores
   ) {
     this.id = id;
     this.codigo = codigo;
@@ -27,45 +29,106 @@ export class Bolsin {
     this.comisionMedicaDestino = comisionMedicaDestino;
     this.cambiosDeEstado = cambiosDeEstado;
     this.dispositivoGPS = dispositivoGPS;
-    this.numeroPrecinto = this.getNumeroPrecinto();
-    this.numeroBolsin = this.getNumeroBolsin();
+    this.numeroPrecinto = numeroPrecinto;
+    // CORRECCIÓN: Asigna el parámetro si viene en el mock, sino usa el id por defecto.
+    // Evita llamar a métodos de instancia en el constructor.
+    this.numeroBolsin = numeroBolsin !== undefined ? numeroBolsin : id; 
   }
 
-  // Diagrama (paso 3): G -> B: sosEnviado()
-  // B -> cEstB: sosActual()  /  estAB -> estB: sosEnviado()
+  // --- Getters / Setters ---
+  getId(): number {
+    return this.id;
+  }
+
+  setId(id: number): void {
+    this.id = id;
+  }
+
+  getCodigo(): string {
+    return this.codigo;
+  }
+
+  setCodigo(codigo: string): void {
+    this.codigo = codigo;
+  }
+
+  getComisionMedicaOrigen(): ComisionMedica {
+    return this.comisionMedicaOrigen;
+  }
+
+  setComisionMedicaOrigen(comisionMedicaOrigen: ComisionMedica): void {
+    this.comisionMedicaOrigen = comisionMedicaOrigen;
+  }
+
+  getComisionMedicaDestino(): ComisionMedica {
+    return this.comisionMedicaDestino;
+  }
+
+  setComisionMedicaDestino(comisionMedicaDestino: ComisionMedica): void {
+    this.comisionMedicaDestino = comisionMedicaDestino;
+  }
+
+  getCambiosDeEstado(): CambioDeEstadoBolsin[] {
+    return this.cambiosDeEstado;
+  }
+
+  setCambiosDeEstado(cambiosDeEstado: CambioDeEstadoBolsin[]): void {
+    this.cambiosDeEstado = cambiosDeEstado;
+  }
+
+  getDispositivoGPS(): DispositivoGPS {
+    return this.dispositivoGPS;
+  }
+
+  setDispositivoGPS(dispositivoGPS: DispositivoGPS): void {
+    this.dispositivoGPS = dispositivoGPS;
+  }
+
+  getNumeroPrecinto(): number {
+    return this.numeroPrecinto;
+  }
+
+  setNumeroPrecinto(numeroPrecinto: number): void {
+    this.numeroPrecinto = numeroPrecinto;
+  }
+
+  setNumeroBolsin(numeroBolsin: number): void {
+    this.numeroBolsin = numeroBolsin;
+  }
+
+
+  // --- Comportamiento (Mensajes del Diagrama de Secuencia) ---
+
+  // Diagrama: G -> B: sosEnviado()
   sosEnviado(): boolean {
     const actual = this.cambiosDeEstado.find(c => c.sosActual());
     if (!actual) return false;
     return actual.sosEnviado();
   }
 
+  // Diagrama: G -> B: esTuCMDeOrigen(codigoCM)
   esTuCMDeOrigen(codigoCM: string): boolean {
     return this.comisionMedicaOrigen.getCodigoCM() === codigoCM;
   }
 
-  // Diagrama (paso 3): G -> B: getNumeroPrecinto()  (número de precinto extraído del código BOL-XXXX)
-  getNumeroPrecinto(): number {
-    return parseInt(this.codigo.replace(/\D/g, ''), 10) || this.id;
-  }
-
-  // Diagrama (paso 3): G -> B: getNumeroBolsin()
+  // Diagrama: G -> B: getNumeroBolsin()
   getNumeroBolsin(): number {
-    return this.id;
+    return this.numeroBolsin;
   }
 
+  // Soporte para armar el objeto plano de la ubicación
   getEstadoActual(): EstadoBolsin | null {
     const actual = this.cambiosDeEstado.find(c => c.sosActual());
-    return actual ? actual.estadoBolsin : null;
+    return actual ? actual.getEstadoBolsin() : null;
   }
 
+  // Diagrama: G -> B: obtenerCMDestino()
   obtenerCMDestino(): ComisionMedica {
     return this.comisionMedicaDestino;
   }
 
-  // Diagrama (paso 4): G -> B: obtenerDispositivoGPS()
+  // Diagrama: G -> B: obtenerDispositivoGPS()
   obtenerDispositivoGPS(): DispositivoGPS {
     return this.dispositivoGPS;
   }
 }
-
-

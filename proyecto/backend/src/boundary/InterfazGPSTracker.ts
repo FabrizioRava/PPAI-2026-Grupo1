@@ -81,7 +81,7 @@ export class InterfazGPSTracker {
     const apiKey = 'API_KEY_SRT_2026';
     let localizacion: DatosLocalizacion;
     if (modelo === 'XTR-4500L') {
-      const cmOrigen = bolsin.comisionMedicaOrigen.getCodigoCM();
+      const cmOrigen = bolsin.getComisionMedicaOrigen().getCodigoCM();
       const responseStr = GPSTrackerActor.getBolsinLocation(apiKey, numeroBolsin, cmOrigen);
       const parsed = JSON.parse(responseStr);
       localizacion = {

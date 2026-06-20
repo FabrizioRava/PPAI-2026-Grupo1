@@ -62,7 +62,7 @@ export class GestorSegBolsines {
 
       const localizacion = InterfazGPSTracker.obtenerUbicacionBolsin(bolsin);
       const numeroPrecinto = bolsin.getNumeroPrecinto();
-      const estadoActual = bolsin.getEstadoActual()?.nombre || 'Enviado';
+      const estadoActual = bolsin.getEstadoActual()?.getNombre() || 'Enviado';
       const cmDestino = bolsin.obtenerCMDestino();
 
       return {
@@ -86,7 +86,7 @@ export class GestorSegBolsines {
     this.nroBolsinSeleccionado = numeroPrecinto;
 
     const precintoStr = `BOL-${String(numeroPrecinto).padStart(3, '0')}`;
-    const bolsin = bolsines.find(b => b.codigo === precintoStr || b.id === numeroPrecinto);
+    const bolsin = bolsines.find(b => b.getCodigo() === precintoStr || b.getNumeroPrecinto() === numeroPrecinto);
 
     if (!bolsin) {
       throw new Error(`No se encontró el bolsín con precinto ${numeroPrecinto}`);
@@ -96,7 +96,7 @@ export class GestorSegBolsines {
 
     const mailGerente = GestorSegBolsines.buscarMailGerente(cmDestino);
     if (!mailGerente) {
-      throw new Error(`No se encontró un Gerente con correo para la Comisión Médica destino (${cmDestino.nombre}).`);
+      throw new Error(`No se encontró un Gerente con correo para la Comisión Médica destino (${cmDestino.getNombreCM()}).`);
     }
     this.mailGerente = mailGerente;
 

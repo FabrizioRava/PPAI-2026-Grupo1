@@ -2,13 +2,13 @@ import { Usuario } from './Usuario';
 import { ComisionMedica } from './ComisionMedica';
 
 export class Sesion {
-  id: number;
-  usuario: Usuario;
-  activa: boolean;
-  fechaHoraInicio: Date;
-  fechaHoraFin: Date | null;
-  cmUsuarioLogueado: string;
-  token: string;
+  private id: number;
+  private usuario: Usuario;
+  private activa: boolean;
+  private fechaHoraInicio: Date;
+  private fechaHoraFin: Date | null;
+  private cmUsuarioLogueado: string;
+  private token: string;
 
   // Repositorio en memoria de sesiones activas, indexado por token.
   // Al migrar a DB se reemplaza por una tabla de sesiones / store de tokens.
@@ -27,6 +27,57 @@ export class Sesion {
     this.token = token;
   }
 
+  // --- Getters / Setters ---
+  getId(): number {
+    return this.id;
+  }
+
+  setId(id: number): void {
+    this.id = id;
+  }
+
+  getUsuario(): Usuario {
+    return this.usuario;
+  }
+
+  setUsuario(usuario: Usuario): void {
+    this.usuario = usuario;
+  }
+
+  estaActiva(): boolean {
+    return this.activa;
+  }
+
+  setActiva(activa: boolean): void {
+    this.activa = activa;
+  }
+
+  getFechaHoraInicio(): Date {
+    return this.fechaHoraInicio;
+  }
+
+  setFechaHoraInicio(fechaHoraInicio: Date): void {
+    this.fechaHoraInicio = fechaHoraInicio;
+  }
+
+  getFechaHoraFin(): Date | null {
+    return this.fechaHoraFin;
+  }
+
+  setFechaHoraFin(fechaHoraFin: Date | null): void {
+    this.fechaHoraFin = fechaHoraFin;
+  }
+
+  
+  getToken(): string {
+    return this.token;
+  }
+
+  setToken(token: string): void {
+    this.token = token;
+  }
+
+  // --- Comportamiento ---
   // Crea y registra una nueva sesión activa para el usuario autenticado.
   static iniciarSesion(usuario: Usuario): Sesion {
     const token = `sesion-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;

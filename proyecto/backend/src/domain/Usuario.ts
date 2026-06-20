@@ -1,11 +1,11 @@
 import { Empleado } from './Empleado';
 
 export class Usuario {
-  id: number;
-  nombreUsuario: string;
+  private id: number;
+  private nombreUsuario: string;
   // Contraseña moqueada (texto plano). Al migrar a DB se reemplaza por un hash.
-  contraseña: string;
-  empleado: Empleado;
+  private contraseña: string;
+  private empleado: Empleado;
 
   constructor(id: number, nombreUsuario: string, contraseña: string, empleado: Empleado) {
     this.id = id;
@@ -14,6 +14,40 @@ export class Usuario {
     this.empleado = empleado;
   }
 
+  // --- Getters / Setters ---
+  getId(): number {
+    return this.id;
+  }
+
+  setId(id: number): void {
+    this.id = id;
+  }
+
+  getUsername(): string {
+    return this.nombreUsuario;
+  }
+
+  setUsername(username: string): void {
+    this.nombreUsuario = username;
+  }
+
+  getPassword(): string {
+    return this.contraseña;
+  }
+
+  setPassword(password: string): void {
+    this.contraseña = password;
+  }
+
+  getEmpleado(): Empleado {
+    return this.empleado;
+  }
+
+  setEmpleado(empleado: Empleado): void {
+    this.empleado = empleado;
+  }
+
+  // --- Comportamiento ---
   obtenerEmpleado(): Empleado {
     return this.empleado;
   }
@@ -26,17 +60,18 @@ export class Usuario {
   // DTO seguro para enviar al frontend (sin exponer la contraseña).
   toJSON() {
     const empleado = this.empleado;
+    const comisionMedica = empleado.getComisionMedica();
     return {
       id: this.id,
       username: this.nombreUsuario,
-      nombre: empleado.nombre,
-      apellido: empleado.apellido,
-      correo: empleado.mail,
-      rol: empleado.rol.nombre,
+      nombre: empleado.getNombre(),
+      apellido: empleado.getApellido(),
+      correo: empleado.getMail(),
+      rol: empleado.getRol().getNombre(),
       comisionMedica: {
-        id: empleado.comisionMedica.id,
-        nombre: empleado.comisionMedica.getNombreCM(),
-        codigo: empleado.comisionMedica.getCodigoCM(),
+        id: comisionMedica.getId(),
+        nombre: comisionMedica.getNombreCM(),
+        codigo: comisionMedica.getCodigoCM(),
       },
     };
   }
