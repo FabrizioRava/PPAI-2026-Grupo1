@@ -8,6 +8,7 @@ skinparam roundcorner 0
 skinparam class {
     BackgroundColor #FFF4E6
     BorderColor #000000
+    LineColor #000000
     FontColor #000000
     FontName Arial
     FontSize 14

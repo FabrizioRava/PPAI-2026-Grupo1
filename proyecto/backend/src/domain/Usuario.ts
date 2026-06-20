@@ -2,15 +2,15 @@ import { Empleado } from './Empleado';
 
 export class Usuario {
   id: number;
-  username: string;
+  nombreUsuario: string;
   // Contraseña moqueada (texto plano). Al migrar a DB se reemplaza por un hash.
-  password: string;
+  contraseña: string;
   empleado: Empleado;
 
-  constructor(id: number, username: string, password: string, empleado: Empleado) {
+  constructor(id: number, nombreUsuario: string, contraseña: string, empleado: Empleado) {
     this.id = id;
-    this.username = username;
-    this.password = password;
+    this.nombreUsuario = nombreUsuario;
+    this.contraseña = contraseña;
     this.empleado = empleado;
   }
 
@@ -19,8 +19,8 @@ export class Usuario {
   }
 
   // Valida usuario + contraseña. Hoy compara texto plano (mock); a futuro, hash.
-  sosVos(username: string, password: string): boolean {
-    return this.username === username && this.password === password;
+  sosVos(nombreUsuario: string, contraseña: string): boolean {
+    return this.nombreUsuario === nombreUsuario && this.contraseña === contraseña;
   }
 
   // DTO seguro para enviar al frontend (sin exponer la contraseña).
@@ -28,10 +28,10 @@ export class Usuario {
     const empleado = this.empleado;
     return {
       id: this.id,
-      username: this.username,
+      username: this.nombreUsuario,
       nombre: empleado.nombre,
       apellido: empleado.apellido,
-      correo: empleado.correo,
+      correo: empleado.mail,
       rol: empleado.rol.nombre,
       comisionMedica: {
         id: empleado.comisionMedica.id,

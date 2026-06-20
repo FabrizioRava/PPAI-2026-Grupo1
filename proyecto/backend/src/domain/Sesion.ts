@@ -5,7 +5,9 @@ export class Sesion {
   id: number;
   usuario: Usuario;
   activa: boolean;
-  fechaInicio: Date;
+  fechaHoraInicio: Date;
+  fechaHoraFin: Date | null;
+  cmUsuarioLogueado: string;
   token: string;
 
   // Repositorio en memoria de sesiones activas, indexado por token.
@@ -17,7 +19,11 @@ export class Sesion {
     this.id = ++Sesion.contadorId;
     this.usuario = usuario;
     this.activa = true;
-    this.fechaInicio = new Date();
+    this.fechaHoraInicio = new Date();
+    this.fechaHoraFin = null;
+    // Obtenemos la comisión médica del empleado y guardamos su código o nombre
+    const empleado = usuario.obtenerEmpleado();
+    this.cmUsuarioLogueado = empleado.obtenerCM().getNombreCM();
     this.token = token;
   }
 
@@ -35,6 +41,7 @@ export class Sesion {
     const sesion = Sesion.sesiones.get(token);
     if (!sesion) return false;
     sesion.activa = false;
+    sesion.fechaHoraFin = new Date();
     Sesion.sesiones.delete(token);
     return true;
   }
@@ -47,10 +54,10 @@ export class Sesion {
   }
 
   // Paso 2 del diagrama: G -> S: buscarCMUsuarioLogueado()
-  // Cadena: S -> L:Usuario.obtenerEmpleado() -> L:Empleado.obtenerCodigoCM() (devuelve la CM)
+  // Cadena: S -> L:Usuario.obtenerEmpleado() -> L:Empleado.obtenerCM() (devuelve la CM)
   // Mensaje sin parámetros: la sesión ya conoce a su usuario logueado.
   buscarCMUsuarioLogueado(): ComisionMedica {
     const empleado = this.usuario.obtenerEmpleado();
-    return empleado.obtenerCodigoCM();
+    return empleado.obtenerCM();
   }
 }

@@ -5,26 +5,30 @@ export class Empleado {
   id: number;
   nombre: string;
   apellido: string;
-  correo: string;
+  mail: string;
+  nombreCM: string;
+  codigoCM: string;
   rol: Rol;
   comisionMedica: ComisionMedica;
 
-  constructor(id: number, nombre: string, apellido: string, correo: string, rol: Rol, comisionMedica: ComisionMedica) {
+  constructor(id: number, nombre: string, apellido: string, mail: string, rol: Rol, comisionMedica: ComisionMedica) {
     this.id = id;
     this.nombre = nombre;
     this.apellido = apellido;
-    this.correo = correo;
+    this.mail = mail;
     this.rol = rol;
     this.comisionMedica = comisionMedica;
+    this.nombreCM = comisionMedica.getNombreCM();
+    this.codigoCM = comisionMedica.getCodigoCM();
   }
 
   getMail(): string {
-    return this.correo;
+    return this.mail;
   }
 
-  // Diagrama (paso 2): el mensaje se llama obtenerCodigoCM; devuelve la CM del empleado
+  // Diagrama (paso 2): el mensaje se llama obtenerCM; devuelve la CM del empleado
   // para que luego se consulten getNombreCM()/getCodigoCM() sobre ella.
-  obtenerCodigoCM(): ComisionMedica {
+  obtenerCM(): ComisionMedica {
     return this.comisionMedica;
   }
 

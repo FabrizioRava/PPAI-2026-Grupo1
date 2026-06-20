@@ -10,6 +10,8 @@ export class Bolsin {
   comisionMedicaDestino: ComisionMedica;
   cambiosDeEstado: CambioDeEstadoBolsin[];
   dispositivoGPS: DispositivoGPS;
+  numeroPrecinto: number;
+  numeroBolsin: number;
 
   constructor(
     id: number,
@@ -25,6 +27,8 @@ export class Bolsin {
     this.comisionMedicaDestino = comisionMedicaDestino;
     this.cambiosDeEstado = cambiosDeEstado;
     this.dispositivoGPS = dispositivoGPS;
+    this.numeroPrecinto = this.getNumeroPrecinto();
+    this.numeroBolsin = this.getNumeroBolsin();
   }
 
   // Diagrama (paso 3): G -> B: sosEnviado()
@@ -35,8 +39,8 @@ export class Bolsin {
     return actual.sosEnviado();
   }
 
-  esTuCMDeOrigen(cmId: number): boolean {
-    return this.comisionMedicaOrigen.id === cmId;
+  esTuCMDeOrigen(codigoCM: string): boolean {
+    return this.comisionMedicaOrigen.getCodigoCM() === codigoCM;
   }
 
   // Diagrama (paso 3): G -> B: getNumeroPrecinto()  (número de precinto extraído del código BOL-XXXX)
