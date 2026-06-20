@@ -72,6 +72,20 @@ export class GestorSegBolsines {
   /**
    * Endpoint Handler para GET /api/bolsines/activos
    */
+    /**
+   *@openapi
+   * /api/bolsines/activos:
+   *   get:
+   *     summary: Obtiene los bolsines activos del usuario logueado
+   *     description: Filtra los bolsines cuyo origen coincida con la Comisión Médica de la sesión activa y cuyo estado actual sea 'Enviado', incluyendo sus coordenadas de geolocalización.
+   *     responses:
+   *       200:
+   *         description: Lista de bolsines activos recuperada con éxito.
+   *       401:
+   *         description: No autorizado. No se encontró una sesión activa.
+   *       500:
+   *         description: Error interno del servidor.
+   */
   static getBolsinesActivos(req: Request, res: Response): void {
     try {
       // 1. buscarCMUsuarioLogueado()
@@ -134,6 +148,33 @@ export class GestorSegBolsines {
 
   /**
    * Endpoint Handler para POST /api/bolsines/notificar (Pasos 9, 10 y 11)
+   */
+
+  /**
+   *@openapi
+   * /api/bolsines/notificar:
+   *   post:
+   *     summary: Envía una notificación de ubicación al Gerente de destino
+   *     description: Busca un bolsín por su número de precinto, identifica la Comisión Médica de destino y notifica al Gerente.
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               numeroPrecinto:
+   *                 type: integer
+   *                 description: Numero identificador del precinto
+   *     responses:
+   *       200:
+   *         description: Notificación simulada y enviada con éxito.
+   *       400:
+   *         description: Solicitud incorrecta. Falta el parámetro numeroPrecinto.
+   *       404:
+   *         description: No se encontró el bolsín o el Gerente asociado a la CM destino.
+   *       500:
+   *         description: Error interno del servidor.
    */
   static notificarUbicacionBolsin(req: Request, res: Response): void {
     try {

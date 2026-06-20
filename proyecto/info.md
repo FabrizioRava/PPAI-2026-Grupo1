@@ -18,6 +18,8 @@ Terminal front, back
 
 BACK
 npm install
+npm install swagger-ui-express swagger-jsdoc
+npm install --save-dev @types/swagger-ui-express @types/swagger-jsdoc
 npm run start
 
 FRONT
