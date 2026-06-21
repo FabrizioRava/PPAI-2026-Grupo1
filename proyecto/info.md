@@ -31,5 +31,9 @@ sudo n lts
 
 npm run dev
 
+# Instalar Swagger en /backend
+npm install swagger-ui-express swagger-jsdoc
+npm install --save-dev @types/swagger-ui-express @types/swagger-jsdoc
+
 # Tirar esto en la consola con usuario logeado para poder comprobar endpoints con Swagger
 console.log(localStorage.getItem('ppai.token'))
