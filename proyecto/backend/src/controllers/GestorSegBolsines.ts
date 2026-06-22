@@ -21,7 +21,7 @@ export class GestorSegBolsines {
   private static mailGerente: string;
 
   static opConsultarUbicBolsines(sesion: Sesion): any {
-    const cmUsuario = sesion.buscarCMUsuarioLogueado();
+    const cmUsuario = this.buscarCMUsuarioLogueado(sesion);
     this.nombreCMUsuarioLogueado = cmUsuario.getNombreCM();
     this.codigoCMUsuarioLogueado = cmUsuario.getCodigoCM();
 
@@ -43,6 +43,10 @@ export class GestorSegBolsines {
       nombreCM: this.nombreCMUsuarioLogueado,
       bolsines: bolsinesConUbicacion
     };
+  }
+
+  private static buscarCMUsuarioLogueado(sesion: Sesion) {
+    return sesion.buscarCMUsuarioLogueado();
   }
 
   static buscarBolsinesEnEstadoEnviado(codigoCM: string): Bolsin[] {
@@ -260,7 +264,7 @@ export class GestorSegBolsines {
         return;
       }
 
-      const cmUsuario = sesion.buscarCMUsuarioLogueado();
+      const cmUsuario = this.buscarCMUsuarioLogueado(sesion);
       const nombreCM = cmUsuario ? cmUsuario.getNombreCM() : 'Sin Comisión';
 
       const bolsinesConUbicacion = GestorSegBolsines.buscarUbicacionBolsines(bolsines);
