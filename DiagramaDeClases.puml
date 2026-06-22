@@ -1,0 +1,191 @@
+@startuml DiagramaClasesSoporte
+skinparam classAttributeIconSize 0
+skinparam monochrome false
+skinparam shadowing false
+skinparam roundcorner 0
+
+
+skinparam class {
+    BackgroundColor #FFF4E6
+    BorderColor #000000
+    LineColor #000000
+    FontColor #000000
+    FontName Arial
+    FontSize 14
+    FontStyle bold
+    StereotypeFontColor #000000
+    StereotypeFontStyle italic
+}
+
+skinparam stereotypeCFontColor #7F7F7F
+skinparam stereotypeCFontSize 10
+
+hide circle
+
+class PantSegBolsines <<Boundary>> {
+  <font color="#8C2400">- bolsines : List</font>
+  <font color="#8C2400">- lblBolsinSeleccionado : String</font>
+  <font color="#8C2400">- filtroNumeroPrecinto : String</font>
+  <font color="#8C2400">- filtroCMDestino : String</font>
+  <font color="#8C2400">- opcionSeleccionarBolsin : boolean</font>
+  <font color="#8C2400">- opcionConfirmarEnvioMail : boolean</font>
+  <font color="#8C2400">- opcionCancelar : boolean</font>
+  <font color="#8C2400">- ubicacionBolsin : String</font>
+  <font color="#8C2400">- nombreCM : String</font>
+  --
+  <font color="#1B6629">+ opConsultarUbicBolsines()</font>
+  <font color="#1B6629">+ habilitarVentana()</font>
+  <font color="#1B6629">+ mostrarNombreCM()</font>
+  <font color="#1B6629">+ mostrarMapaBolsines()</font>
+  <font color="#1B6629">+ solicitarSeleccionBolsin()</font>
+  <font color="#1B6629">+ tomarSeleccionBolsin()</font>
+  <font color="#1B6629">+ mostrarOpEnviarMail()</font>
+  <font color="#1B6629">+ tomarConfirmacionEnvioMail()</font>
+  <font color="#1B6629">+ mostrarMensajeEnvioMail()</font>
+}
+
+class GestorSegBolsines <<Control>> {
+  <font color="#8C2400">- nombreCMUsuarioLogueado : String</font>
+  <font color="#8C2400">- codigoCMUsuarioLogueado : String</font>
+  <font color="#8C2400">- numerosPrecintoBolsines : List</font>
+  <font color="#8C2400">- numerosBolsines : List</font>
+  <font color="#8C2400">- nombresCMDestino : List</font>
+  <font color="#8C2400">- codigosCMDestino : List</font>
+  <font color="#8C2400">- marcasGPSBolsines : List</font>
+  <font color="#8C2400">- modelosGPSBolsines : List</font>
+  <font color="#8C2400">- ubicacionesBolsines : List</font>
+  <font color="#8C2400">- nroBolsinSeleccionado : int</font>
+  <font color="#8C2400">- mailGerente : String</font>
+  --
+  <font color="#1B6629">+ opConsultarUbicBolsines()</font>
+  <font color="#1B6629">+ buscarCMUsuarioLogueado()</font>
+  <font color="#1B6629">+ buscarBolsinesEnEstadoEnviado()</font>
+  <font color="#1B6629">+ obtenerCMDestino()</font>
+  <font color="#1B6629">+ buscarUbicacionBolsines()</font>
+  <font color="#1B6629">+ obtenerMapaBolsines()</font>
+  <font color="#1B6629">+ tomarSeleccionBolsin()</font>
+  <font color="#1B6629">+ tomarConfirmacionEnvioMail()</font>
+  <font color="#1B6629">+ buscarMailGerente()</font>
+  <font color="#1B6629">+ enviarMailGerente()</font>
+  <font color="#1B6629">+ finCU()</font>
+}
+
+class InterfazGPSTracker <<Boundary>> {
+  <font color="#8C2400">- coordenadasObtenidas : List</font>
+  --
+  <font color="#1B6629">+ obtenerUbicacionBolsin()</font>
+}
+
+class InterfazGoogleMaps <<Boundary>> {
+  <font color="#8C2400">- mapaRenderizado : String</font>
+  --
+  <font color="#1B6629">+ obtenerMapaBolsines()</font>
+}
+
+class DispositivoGPS <<Entity>> {
+  <font color="#8C2400">- marca : String</font>
+  <font color="#8C2400">- modelo : String</font>
+  --
+  <font color="#1B6629">+ getMarcaGPS()</font>
+  <font color="#1B6629">+ getModeloGPS()</font>
+}
+
+class Sesion <<Entity>> {
+  <font color="#8C2400">- fechaHoraInicio : Date</font>
+  <font color="#8C2400">- fechaHoraFin : Date</font>
+  <font color="#8C2400">- cmUsuarioLogueado : String</font>
+  --
+  <font color="#1B6629">+ buscarCMUsuarioLogueado()</font>
+}
+
+class Usuario <<Entity>> {
+  <font color="#8C2400">- nombreUsuario : String</font>
+  <font color="#8C2400">- contraseña : String</font>
+  --
+  <font color="#1B6629">+ obtenerEmpleado()</font>
+}
+
+class Empleado <<Entity>> {
+  <font color="#8C2400">- nombre : String</font>
+  <font color="#8C2400">- apellido : String</font>
+  <font color="#8C2400">- mail : String</font>
+  <font color="#8C2400">- nombreCM : String</font>
+  <font color="#8C2400">- codigoCM : String</font>
+  --
+  <font color="#1B6629">+ esTuCM()</font>
+  <font color="#1B6629">+ obtenerCM()</font>
+  <font color="#1B6629">+ esGerenteCMDestino()</font>
+  <font color="#1B6629">+ getMail()</font>
+}
+
+class Rol <<Entity>> {
+  <font color="#8C2400">- nombre : String</font>
+  --
+  <font color="#1B6629">+ esGerente()</font>
+}
+
+class ComisionMedica <<Entity>> {
+  <font color="#8C2400">- nombre : String</font>
+  <font color="#8C2400">- codigo : String</font>
+  --
+  <font color="#1B6629">+ getNombreCM()</font>
+  <font color="#1B6629">+ getCodigoCM()</font>
+}
+
+class Bolsin <<Entity>> {
+  <font color="#8C2400">- numeroPrecinto : int</font>
+  <font color="#8C2400">- numeroBolsin : int</font>
+  --
+  <font color="#1B6629">+ sosEnviado()</font>
+  <font color="#1B6629">+ esTuCMDeOrigen()</font>
+  <font color="#1B6629">+ getNumeroPrecinto()</font>
+  <font color="#1B6629">+ getNumeroBolsin()</font>
+  <font color="#1B6629">+ obtenerCMDestino()</font>
+  <font color="#1B6629">+ obtenerDispositivoGPS()</font>
+}
+
+class CambioDeEstadoBolsin <<Entity>> {
+  <font color="#8C2400">- fechaHoraInicio : Date</font>
+  <font color="#8C2400">- fechaHoraFin : Date</font>
+  --
+  <font color="#1B6629">+ sosActual()</font>
+  <font color="#1B6629">+ sosEnviado()</font>
+}
+
+class EstadoBolsin <<Entity>> {
+  <font color="#8C2400">- nombre : String</font>
+  <font color="#8C2400">- descripcion : String</font>
+  --
+  <font color="#1B6629">+ sosEnviado()</font>
+}
+
+left to right direction
+
+PantSegBolsines <.. GestorSegBolsines
+
+GestorSegBolsines ..> InterfazGPSTracker
+GestorSegBolsines ..> InterfazGoogleMaps
+
+GestorSegBolsines ..> Sesion
+GestorSegBolsines ..> Empleado
+GestorSegBolsines ..> Bolsin
+
+Sesion -> "1" Usuario : usuario
+Usuario -> "1" Empleado : empleado
+
+Empleado --> "1" Rol : rol
+Empleado ---> "1" ComisionMedica : comision medica
+
+Bolsin --> "1 (origen)" ComisionMedica : cm origen
+Bolsin --> "1 (destino)" ComisionMedica : cm destino
+Bolsin --> "1" DispositivoGPS : dispositivoGps
+
+Bolsin --> "1..*" CambioDeEstadoBolsin : cambio de estado bolsin
+CambioDeEstadoBolsin --> "1" EstadoBolsin : estado bolsin
+
+
+DispositivoGPS -[hidden]up-> Bolsin
+Bolsin -[hidden]down-> CambioDeEstadoBolsin
+InterfazGoogleMaps -[hidden]left-> GestorSegBolsines
+InterfazGPSTracker -[hidden]left-> GestorSegBolsines
+@enduml

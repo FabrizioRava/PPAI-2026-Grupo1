@@ -1,24 +1,26 @@
-
-@startuml PPAI
+@startuml test
 autonumber "<b>00-"
 skinparam style strictuml
 skinparam ranking as actores
 
 skinparam sequence {
-    ParticipantBackgroundColor #EBF3F9
-    ParticipantBorderColor #336699
+    LifeLineBackgroundColor #C5EBEF
+    LifeLineBorderColor #333333
+    
+    ParticipantBackgroundColor #C5EBEF
+    ParticipantBorderColor #333333
     ParticipantFontName Arial
     ParticipantFontSize 11
     ActorBackgroundColor #FFE6CC
     ActorBorderColor #D79B00
 }
 
-skinparam entityBackgroundColor #F5F5F5
-skinparam entityBorderColor #666666
-skinparam controlBackgroundColor #E2EFDA
-skinparam controlBorderColor #375623
-skinparam boundaryBackgroundColor #FFF2CC
-skinparam boundaryBorderColor #7F6000
+skinparam entityBackgroundColor #C5EBEF
+skinparam entityBorderColor #333333
+skinparam controlBackgroundColor #C5EBEF
+skinparam controlBorderColor #333333
+skinparam boundaryBackgroundColor #C5EBEF
+skinparam boundaryBorderColor #333333
 
 skinparam sequenceParticipant {
     roundcorner 100
@@ -26,200 +28,157 @@ skinparam sequenceParticipant {
 
 title Diagrama de Secuencia: CU 36 - Consultar seguimiento de bolsines
 
-actor ":EncargadoBolsines" as EB
-boundary ":InterfazSeguimiento" as UI <<boundary>>
-control ":GestorSeguimientoBolsines" as Ctrl <<control>>
+actor "<b><u>:Encargado Bolsin" as EB
+boundary "<b><u>:PantSegBolsines" as P
+control "<b><u>:GestorSegBolsines" as G
+entity "<b><u>A:Sesion" as S
+entity "<b><u>L:Usuario" as U
+entity "<b><u>L:Empleado" as E
 
-' Entidades del sistema
-entity "activa:Sesion" as Sesion <<entity>>
-entity "logueado:Usuario" as User <<entity>>
-entity "logueado:Empleado" as EmpLog <<entity>>
-entity ":ComisionMedica" as CMOrig <<entity>>
-entity ":Bolsin" as BolsinAux <<entity>>
-entity "actual:CambioEstadoBolsin" as CambioEstado <<entity>>
-entity "actual:Estado" as Estado <<entity>>
-entity "P:Precinto" as Precinto <<entity>>
+entity "<b><u>:Bolsin" as B #FF5B00
+entity "<b><u>:DispositivoGPS" as DGPS #C5EBEF
+entity "<b><u>:Empleado" as Em #FF5B00
+entity "<b><u>:Comision Medica" as CM
+entity "<b><u>:Rol" as R 
+entity "<b><u>:CambioDeEstadoBolsin" as cEstB #FF5B00
+entity "<b><u>A: CambioDeEstadoBolsin" as ACE #C5EBEF
+entity "<b><u>A:EstadoBolsin" as estB
 
-' Boundaries de Fabricación Pura para Actores Externos
-boundary ":IAdaptadorGPS" as AdaptadorGPS <<boundary>>
-boundary ":IAdaptadorMaps" as AdaptadorMaps <<boundary>>
+boundary "<b><u>InterfazGPSTracker" as GPS
+actor "<b><u>GPS Tracker" as GpAc
+boundary "<b><u>InterfazGoogleMaps" as BGMap
+actor "<b><u>GoogleMaps" as GMap
+participant "<b><u>CU31" as CU31 <<usecase>>
 
-' Actores Externos
-actor ":GPSTracker" as GPS
-actor ":ServidorGoogleMaps" as Maps
+EB -> P: opConsultarUbicBolsines()
+activate P
 
-' Entidades de la segunda fase del flujo
-entity "elegida:Bolsin" as Bolsin <<entity>> #FCE4D6
-entity "cmBolsinSeleccionado:ComisionMedica" as CMDest <<entity>>
-entity ":Empleado" as EmpCorp <<entity>>
-participant "CU 31: Notificar ubicación de bolsín" as CU_Notif
+P -> P: habilitarVentana()
+activate P
+deactivate P
 
-EB -> UI : seleccionarConsultarUbicacion()
-activate UI
+P -> G: opConsultarUbicBolsines() 
+activate G
 
-UI -> UI : habilitarVentana()
-activate UI
-deactivate UI
+G -> G ++ : buscarCMUsuarioLogueado()
+deactivate G
+    G -> S ++ : buscarCMUsuarioLogueado()
+        S -> U ++ : obtenerEmpleado()
+            U -> E ++ : obtenerCM()
+                E -> CM ++ : getNombreCM()
+                deactivate CM
+                E -> CM ++ : getCodigoCM()
+                deactivate CM
+            deactivate E
+        deactivate U
+    deactivate S
 
-UI -> Ctrl : consultarSeguimientoBolsines()
-activate Ctrl
+G -> P: mostrarNombreCM()
 
-Ctrl -> Ctrl : obtenerUsuarioLogueado()
-activate Ctrl
-    Ctrl -> Sesion : getUsuarioSesion()
-    activate Sesion
-        Sesion -> User : getEmpleado()
-        activate User
-            User -> EmpLog : getCM()
-            activate EmpLog
-                EmpLog -> EmpLog : getCM()
-                activate EmpLog
-                deactivate EmpLog
-            deactivate EmpLog
-        deactivate User
-    deactivate Sesion
-deactivate Ctrl
+G -> G ++ : buscarBolsinesEnEstadoEnviado()
+deactivate G
+    group Bolsines en estado Enviado [mientras haya bolsines]
+        G -> B ++ #FF5B00: sosEnviado()
+            B -> cEstB ++ #FF5B00: sosActual()
+            deactivate cEstB
+            B -> ACE ++ : sosEnviado()
+                ACE -> estB ++: sosEnviado()
+                deactivate estB
+                deactivate ACE
+            deactivate cEstB
+            deactivate cEstB
+        deactivate B
 
-Ctrl -> UI : mostrarCMUsuario()
-
-Ctrl -> Ctrl : buscarBolsinesEnviados()
-activate Ctrl
-    Ctrl -> CMOrig : buscarBolsinesEnviados()
-    activate CMOrig
-        loop [BúsquedaBolsines] [Mientras haya bolsines]
-            CMOrig -> BolsinAux : verificarCorrespondencia()
-            activate BolsinAux
-                BolsinAux -> BolsinAux : esTuCMOrigen()
-                activate BolsinAux
-                deactivate BolsinAux
-                
-                BolsinAux -> CambioEstado : sosActual()
-                activate CambioEstado
-                deactivate CambioEstado
-                
-                BolsinAux -> CambioEstado : sosEnviado()
-                activate CambioEstado
-                    CambioEstado -> Estado : esEnviado()
-                    activate Estado
-                    deactivate Estado
-                deactivate CambioEstado
-            deactivate BolsinAux
-        end
-    deactivate CMOrig
-deactivate Ctrl
-
-' Fase de recolección de datos previos antes de consumir el GPS Tracker e incluir Nro de Precinto
-Ctrl -> Ctrl : obtenerDatosParaLocalizacionYFiltro()
-activate Ctrl
-    Ctrl -> CMOrig : getApiKey()
-    activate CMOrig
-    deactivate CMOrig
-    
-    Ctrl -> CMOrig : getNroCM()
-    activate CMOrig
-    deactivate CMOrig
-    
-    loop [Para cada bolsín enviado detectado]
-        Ctrl -> BolsinAux : getIdBolsin()
-        activate BolsinAux
-        deactivate BolsinAux
+        G -> B ++ #FF5B00: esTuCMDeOrigen()
+        deactivate B
+        G -> B ++ #FF5B00: getNumeroPrecinto()
+        deactivate B
+        G -> B ++ #FF5B00: getNumeroBolsin()
+        deactivate B
         
-        Ctrl -> BolsinAux : getNroPrecinto()
-        activate BolsinAux
-            BolsinAux -> Precinto : getNroPrecinto()
-            activate Precinto
-            deactivate Precinto
-        deactivate BolsinAux
+        G -> B ++ #FF5B00: obtenerCMDestino()
+            B -> CM ++: getCodigoCM()
+            deactivate CM
+            B -> CM ++: getNombreCM()
+            deactivate CM
+        deactivate B
+        
+        G -> B ++ #FF5B00: obtenerDispositivoGPS()
+            B -> DGPS ++ #C5EBEF: getMarcaGPS()
+            deactivate DGPS
+            B -> DGPS ++ #C5EBEF: getModeloGPS()
+            deactivate DGPS
+        deactivate B
     end
-deactivate Ctrl
 
-' Consulta al GPS a través de clase Frontera (Desacoplado)
-Ctrl -> Ctrl : consultarUbicacionesGPS()
-activate Ctrl
-    Ctrl -> AdaptadorGPS : consultarLocalizacion()
-    activate AdaptadorGPS
-        AdaptadorGPS -> GPS : *getBolsinLocation()
-        activate GPS
+G -> G ++ : buscarUbicacionBolsines()
+deactivate G
+    group Bolsines en estado Enviado [mientras haya bolsines enviados]
+        G -> GPS ++: obtenerUbicacionBolsin()
+            GPS -> GpAc ++: getBolsinLocation()
+            deactivate GpAc
         deactivate GPS
-    deactivate AdaptadorGPS
-deactivate Ctrl
+    end
 
-' Generación del mapa a través de clase Frontera (Desacoplado)
-Ctrl -> Ctrl : generarMapa()
-activate Ctrl
-    Ctrl -> AdaptadorMaps : solicitarRenderizadoMapa()
-    activate AdaptadorMaps
-        AdaptadorMaps -> Maps : obtenerMapaConPosiciones()
-        activate Maps
-        deactivate Maps
-    deactivate AdaptadorMaps
-deactivate Ctrl
+G -> G ++ : obtenerMapaBolsines()
+deactivate G
+G -> BGMap ++: obtenerMapaBolsines()
+    BGMap -> GMap ++: getMapaBolsines()
+    deactivate GMap
+deactivate BGMap
 
-Ctrl -> UI : mostrarMapaYFiltros()
-deactivate Ctrl
+G -> P: mostrarMapaBolsines()
 
-EB -> UI : seleccionarBolsinDelMapa()
+G -> P: solicitarSeleccionBolsin()
+deactivate G
+deactivate P
 
-UI -> Ctrl : tomarSeleccionBolsin()
-activate Ctrl
+EB -> P: tomarSeleccionBolsin()
+activate P
 
-Ctrl -> Ctrl : validarEnvioCorreoGCM()
-activate Ctrl
-deactivate Ctrl
+P -> G: tomarSeleccionBolsin()
+activate G
 
-Ctrl -> UI : solicitarConfirmacionEnvio()
-deactivate Ctrl
+G -> P: mostrarOpEnviarMail()
+deactivate G
+deactivate P
 
-EB -> UI : confirmarEnvioCorreo()
+EB -> P: tomarConfirmacionEnvioMail()
+activate P
 
-UI -> Ctrl : procesarEnvioNotificacion()
-activate Ctrl
+P -> G: tomarConfirmacionEnvioMail()
+activate G
 
-Ctrl -> Ctrl : obtenerComisionDestino()
-activate Ctrl
-    Ctrl -> Bolsin : identificarComisionDestino()
-    activate Bolsin
-        Bolsin -> CMDest : obtenerCMDestino()
-        activate CMDest
-            CMDest -> CMDest : getNombre()
-            activate CMDest
-            deactivate CMDest
-        deactivate CMDest
-    deactivate Bolsin
-deactivate Ctrl
+G -> G ++: buscarMailGerente()
+deactivate G
+    group Empleados CM Destino [mientras haya empleados y no se encuentre el gerente de la CM destino]
+        G -> Em ++ #FF5B00: esTuCM()
+        deactivate Em
+        
+        G -> Em ++ #FF5B00: esGerenteCMDestino()
+            Em -> R ++: esGerente()
+            deactivate R
+        deactivate Em
+        
+        G -> Em ++ #FF5B00: getMail()
+        deactivate Em
+    end
 
-Ctrl -> Ctrl : buscarEmailGCM()
-activate Ctrl
-    Ctrl -> CMDest : buscarEmailGCM()
-    activate CMDest
-        loop [BúsquedaEmails] [Mientras haya empleados]
-            CMDest -> EmpCorp : esTuCM()
-            activate EmpCorp
-            deactivate EmpCorp
-            CMDest -> EmpCorp : sosGCM()
-            activate EmpCorp
-            deactivate EmpCorp
-            CMDest -> EmpCorp : getEmail()
-            activate EmpCorp
-            deactivate EmpCorp
-        end
-    deactivate CMDest
-deactivate Ctrl
+G -> G: enviarMailGerente()
+activate G
+deactivate G
 
-Ctrl -> Ctrl : llamarCUNotificarUbicacion()
-activate Ctrl
-deactivate Ctrl
+G -> CU31: «include» llamarCUNotificacionBolsin()
+activate CU31
+deactivate CU31
 
-Ctrl -> CU_Notif : «include»
-activate CU_Notif
-deactivate CU_Notif
+G -> P: mostrarMensajeEnvioMail()
 
-Ctrl -> UI : informarEjecucionExitosa()
-deactivate Ctrl
+G -> G: finCU()
+activate G
+deactivate G
 
-UI -> EB : mostrarMensajeExito()
-deactivate UI
-
-Ctrl -> Ctrl : finCU()
+deactivate G
+deactivate P
 
 @enduml

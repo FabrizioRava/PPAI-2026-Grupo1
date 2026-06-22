@@ -1,12 +1,22 @@
 @startuml Maquina de Estados Remito
-[*] -> Creado : 15. Generar Remito/new()
-Creado ---> EnBolsinSaliente : \n\n19. Generar Bolsin/20. Modificar Bolsin/asignarABolsin()
-EnBolsinSaliente --> Creado : 20. Modificar Bolsin/21. Eliminar Bolsin/quitar()
-EnBolsinSaliente --> EnBolsinEnviado : 27. Registrar el retiro de bolsines/enviar()
-EnBolsinEnviado --> Recibido : 28. Registrar recepcion de bolsin/recibir()
-Recibido ---> AceptadoParcial : 31. Registrar Revision de Documentación/aceptar()\n[faltaDoc=SI]
-Recibido ---> Aceptado : 31. Registrar Revision de Documentación/aceptar()\n[faltaDoc=NO]
-Creado --> Cancelado : 17. Cancelar Remito/cancelar()
+skinparam style strictuml
+
+[*] --> Creado : 15. Generar Remito / new()
+Creado --> EnBolsinSaliente : 19. Generar Bolsin / 20. Modificar Bolsin / asignarABolsin()
+EnBolsinSaliente --> Creado : 20. Modificar Bolsin / 21. Eliminar Bolsin / quitar()
+EnBolsinSaliente --> EnBolsinEnviado : 27. Registrar el retiro de bolsines / enviar()
+
+state "En bolsín enviado" as EnBolsinEnviado
+state "Recibido y Aceptado" as RecibidoYAceptado
+state "Recibido y Aceptado Parcial" as RecibidoYAceptadoParcial
+
+' Aquí se realiza la diferenciación que mencionan dentro del CU 28:
+EnBolsinEnviado --> RecibidoYAceptado : 28. Registrar recepción de bolsín / recibir() \n[falta documentación=NO]
+EnBolsinEnviado --> RecibidoYAceptadoParcial : 28. Registrar recepción de bolsín / recibir() \n[falta documentación=SI]
+
+Creado --> Cancelado : 17. Cancelar Remito / cancelarRemito()
+
 Cancelado --> [*]
-Aceptado --> [*]
-AceptadoParcial --> [*]
+RecibidoYAceptado --> [*]
+RecibidoYAceptadoParcial --> [*]
+@enduml

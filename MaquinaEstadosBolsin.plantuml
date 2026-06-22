@@ -1,10 +1,22 @@
 @startuml Maquina de Estados Bolsin
-[*] -> Creado : 19. Generar Bolsin/new()
-Creado -> Cerrado : \n39. Cerrar Bolsin/cerrar()
-Cerrado -> Creado : 40. Reabrir Bolsin/reabrir()
-Creado ---> DeBaja : 21. Eliminar Bolsin/eliminar()
-Cerrado -> DeBaja : 21. Eliminar Bolsin/eliminar()
-Cerrado --> Enviado : 27. Registrar el retiro de bolsines/enviar()
-Enviado --> Recibido : 28. Registrar recepción de bolsin/recibir()
+skinparam style strictuml
+
+state Creado
+state Cerrado
+state Enviado
+state "Recibido en CM destino" as Recibido
+state "De baja" as DeBaja
+
+[*] --> Creado : 19. Generar Bolsín / new()
+Creado --> Cerrado : 39. Cerrar Bolsín / cerrar()
+Cerrado --> Creado : 40. Reabrir Bolsín / reabrir()
+
+Creado --> DeBaja : 21. Eliminar Bolsín / eliminar()
+Cerrado --> DeBaja : 21. Eliminar Bolsín / eliminar()
+
+Cerrado --> Enviado : 27. Registrar el retiro de bolsines / enviar()
+Enviado --> Recibido : 28. Registrar recepción de bolsín / recibir()
+
 DeBaja --> [*]
-Recibido -> [*]
+Recibido --> [*]
+@enduml
