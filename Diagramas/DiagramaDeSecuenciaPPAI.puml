@@ -46,8 +46,8 @@ entity "<b><u>A:EstadoBolsin" as estB
 
 boundary "<b><u>InterfazGPSTracker" as GPS
 actor "<b><u>GPS Tracker" as GpAc
-boundary "<b><u>InterfazGoogleMaps" as BGMap
-actor "<b><u>GoogleMaps" as GMap
+boundary "<b><u>InterfazMapa" as IMap
+actor "<b><u>Mapa" as Map
 participant "<b><u>CU31" as CU31 <<usecase>>
 
 EB -> P: opConsultarUbicBolsines()

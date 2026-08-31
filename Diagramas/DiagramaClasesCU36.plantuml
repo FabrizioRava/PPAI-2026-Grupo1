@@ -55,7 +55,7 @@ class InterfazGPSTracker <<Boundary>> {
   + obtenerUbicacionBolsin()
 }
 
-class InterfazGoogleMaps <<Boundary>> {
+class InterfazMapa <<Boundary>> {
   - mapaBolsines
 
   + obtenerMapaBolsines()
@@ -154,7 +154,7 @@ PantSegBolsines <..> GestorSegBolsines
 GestorSegBolsines ..> Sesion
 GestorSegBolsines ..> Bolsin
 Bolsin ..> GPSTracker
-GestorSegBolsines ..> GoogleMaps
+GestorSegBolsines ..> Mapa
 GestorSegBolsines ..> Empleado
 
 ' Relaciones de Dominio (Como el Modelo de Dominio Clásico - Flechas sólidas)

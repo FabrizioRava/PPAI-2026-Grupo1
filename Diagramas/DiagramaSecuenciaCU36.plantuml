@@ -49,8 +49,8 @@ entity "A:EstadoBolsin" as estB
 ' interfaz clase fabricacion pura
 boundary "InterfazGPSTracker" as GPS
 actor "GPS Tracker" as GpAc
-boundary "InterfazGoogleMaps" as BGMap
-actor "GoogleMaps" as GMap
+boundary "InterfazMapa" as IMap
+actor "Mapa" as Map
 participant "CU31" as CU31
 
 
