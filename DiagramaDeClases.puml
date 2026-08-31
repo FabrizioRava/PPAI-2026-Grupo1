@@ -76,7 +76,7 @@ class InterfazGPSTracker <<Boundary>> {
   <font color="#1B6629">+ obtenerUbicacionBolsin()</font>
 }
 
-class InterfazGoogleMaps <<Boundary>> {
+class InterfazMapa <<Boundary>> {
   <font color="#8C2400">- mapaRenderizado : String</font>
   --
   <font color="#1B6629">+ obtenerMapaBolsines()</font>
@@ -164,7 +164,7 @@ left to right direction
 PantSegBolsines <.. GestorSegBolsines
 
 GestorSegBolsines ..> InterfazGPSTracker
-GestorSegBolsines ..> InterfazGoogleMaps
+GestorSegBolsines ..> InterfazMapa
 
 GestorSegBolsines ..> Sesion
 GestorSegBolsines ..> Empleado
@@ -186,6 +186,6 @@ CambioDeEstadoBolsin --> "1" EstadoBolsin : estado bolsin
 
 DispositivoGPS -[hidden]up-> Bolsin
 Bolsin -[hidden]down-> CambioDeEstadoBolsin
-InterfazGoogleMaps -[hidden]left-> GestorSegBolsines
+InterfazMapa -[hidden]left-> GestorSegBolsines
 InterfazGPSTracker -[hidden]left-> GestorSegBolsines
 @enduml
