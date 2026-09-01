@@ -34,10 +34,8 @@ export class GestorSegBolsines {
     this.modelosGPSBolsines = bolsinesFiltrados.map(b => b.obtenerDispositivoGPS().getModeloGPS());
 
     const bolsinesConUbicacion = GestorSegBolsines.buscarUbicacionBolsines(bolsinesFiltrados);
-    this.ubicacionesBolsines = bolsinesConUbicacion;
 
-    const mapa = GestorSegBolsines.obtenerMapaBolsines(bolsinesConUbicacion);
-    void mapa;
+    GestorSegBolsines.obtenerMapaBolsines(bolsinesConUbicacion);
 
     return {
       nombreCM: this.nombreCMUsuarioLogueado,
@@ -45,6 +43,7 @@ export class GestorSegBolsines {
     };
   }
 
+  
   private static buscarCMUsuarioLogueado(sesion: Sesion) {
     return sesion.buscarCMUsuarioLogueado();
   }
