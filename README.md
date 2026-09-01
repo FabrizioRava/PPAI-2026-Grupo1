@@ -2,15 +2,14 @@
 
 Trabajo Práctico Aplicado Integrador de la cátedra Diseño de Sistemas de Información — Grupo 1.
 
-Implementa el **CU36 - Consultar seguimiento de bolsines** (con el **CU31 - Notificar ubicación de bolsín** incluido), siguiendo el modelo de análisis desarrollado durante la materia: diseño orientado a objetos con patrones GRASP y arquitectura Boundary-Control-Entity (BCE).
-
+Implementa el **CU36 - Consultar seguimiento de bolsines** (con el **CU31 - Notificar ubicación de bolsín** incluido), siguiendo el modelo de análisis desarrollado durante la materia.
 ## Índice
 
 - [Dominio](#dominio)
 - [Arquitectura y diagramas](#arquitectura-y-diagramas)
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Tecnologías utilizadas](#tecnologías-utilizadas)
-- [Puesta en marcha](#puesta-en-marcha)
+- [Despliegue](#despliegue)
 - [Scripts disponibles](#scripts-disponibles)
 
 ## Dominio
@@ -36,7 +35,7 @@ El sistema modela el traslado de **bolsines** (bolsas con documentación médica
 3. El usuario ve los bolsines sobre un mapa y puede seleccionar uno.
 4. Al confirmar el envío de la notificación (CU31, incluido), el sistema registra un nuevo reporte de ubicación y envía (simulado, por consola) un mail al Gerente de la Comisión Médica destino con la ubicación actual del bolsín.
 
-Los datos son un mock en memoria ([`mockData.ts`](proyecto/backend/src/mockData.ts)) — no hay base de datos real.
+Los datos son un mock en memoria ([`mockData.ts`](proyecto/backend/src/mockData.ts)) — no hay base de datos real (todavia).
 
 ## Arquitectura y diagramas
 
@@ -118,7 +117,7 @@ Los archivos `*.test.ts(x)` viven junto al código que prueban (convención de v
 | **Supertest** | Prueba los endpoints Express reales (integración) sin levantar un servidor HTTP aparte. |
 | **Testing Library + jsdom** | Prueba los componentes React simulando interacción real de usuario (clicks, tipeo) en vez de acoplarse a detalles de implementación. |
 
-## Puesta en marcha
+## Despliegue
 
 Requiere Node.js 20+ y npm.
 
