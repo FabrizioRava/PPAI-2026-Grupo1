@@ -4,7 +4,7 @@ import { ComisionMedica } from '../domain/ComisionMedica';
 import { Bolsin } from '../domain/Bolsin';
 import { bolsines, empleados } from '../mockData';
 import { InterfazGPSTracker } from '../boundary/InterfazGPSTracker';
-import { InterfazGoogleMaps } from '../boundary/InterfazGoogleMaps';
+import { InterfazMapa } from '../boundary/InterfazMapa';
 import { GestorLogin } from './GestorLogin';
 
 export class GestorSegBolsines {
@@ -82,7 +82,7 @@ export class GestorSegBolsines {
   }
 
   static obtenerMapaBolsines(bolsinesConUbicacion: any[]): string {
-    return InterfazGoogleMaps.obtenerMapaBolsines(bolsinesConUbicacion);
+    return InterfazMapa.obtenerMapaBolsines(bolsinesConUbicacion);
   }
 
   static tomarConfirmacionEnvioMail(numeroPrecinto: number, sesion: Sesion): any {
