@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapaBolsines } from '../components/MapaBolsines';
-import { UsuarioDTO, obtenerBolsinesActivos, notificarUbicacionBolsin } from '../api';
+import { UsuarioDTO, obtenerBolsinesActivos, notificarUbicacionBolsin, seleccionarBolsin } from '../api';
 
 // Interfaz para la entidad Bolsín con los datos localizados
 export interface Bolsin {
@@ -63,8 +63,10 @@ export const PantSegBolsines: React.FC<PantSegBolsinesProps> = ({ usuario, onVol
   }, []);
 
   // Método: tomarSeleccionBolsin(bolsin) - Paso 7 del diagrama de secuencia
+  // Informa la selección a GestorSegBolsines (P -> G: tomarSeleccionBolsin())
   const tomarSeleccionBolsin = (bolsin: Bolsin) => {
     setBolsinSeleccionado(bolsin);
+    seleccionarBolsin(bolsin.numeroPrecinto).catch((err) => console.error(err));
   };
 
   // Método: tomarConfirmacionEnvioMail() - Paso 9 del diagrama de secuencia

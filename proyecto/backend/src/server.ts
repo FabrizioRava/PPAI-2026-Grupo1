@@ -23,6 +23,7 @@ app.get('/api/me', GestorLogin.me);
 // Rutas de seguimiento de bolsines (requieren sesión activa)
 app.get('/api/bolsines', GestorSegBolsines.getTodosLosBolsines);
 app.get('/api/bolsines/activos', GestorSegBolsines.getBolsinesActivos);
+app.post('/api/bolsines/seleccionar', GestorSegBolsines.seleccionarBolsin);
 app.post('/api/bolsines/notificar', GestorSegBolsines.notificarUbicacionBolsin);
 
 app.listen(PORT, () => {

@@ -124,6 +124,26 @@ export async function obtenerBolsinesActivos(): Promise<{ nombreCM: string; bols
 }
 
 /**
+ * Informa al backend cuál es el bolsín seleccionado por el Encargado de Bolsín.
+ */
+export async function seleccionarBolsin(numeroPrecinto: number): Promise<any> {
+  const response = await fetch(`${API_BASE}/api/bolsines/seleccionar`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeaders(),
+    },
+    body: JSON.stringify({ numeroPrecinto }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || 'No se pudo registrar la selección del bolsín.');
+  }
+  return data;
+}
+
+/**
  * Envía la configuración al gestor para registrar un nuevo reporte de ubicación y despachar el mail al Gerente.
  */
 export async function notificarUbicacionBolsin(numeroPrecinto: number): Promise<any> {

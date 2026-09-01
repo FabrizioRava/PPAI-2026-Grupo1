@@ -85,6 +85,10 @@ export class GestorSegBolsines {
     return InterfazMapa.obtenerMapaBolsines(bolsinesConUbicacion);
   }
 
+  static tomarSeleccionBolsin(numeroPrecinto: number): void {
+    this.nroBolsinSeleccionado = numeroPrecinto;
+  }
+
   static tomarConfirmacionEnvioMail(numeroPrecinto: number, sesion: Sesion): any {
     void sesion;
     this.nroBolsinSeleccionado = numeroPrecinto;
@@ -182,6 +186,58 @@ export class GestorSegBolsines {
 
       const respuestaExacta = GestorSegBolsines.opConsultarUbicBolsines(sesion);
       res.status(200).json(respuestaExacta);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+/**
+ * @openapi
+ * /api/bolsines/seleccionar:
+ *   post:
+ *     summary: Registra la selección de un bolsín
+ *     description: Informa al Gestor de Seguimiento de Bolsines cuál es el bolsín seleccionado por el Encargado de Bolsín para habilitar la opción de notificar su ubicación.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - numeroPrecinto
+ *             properties:
+ *               numeroPrecinto:
+ *                 type: integer
+ *                 description: Número identificador del precinto seleccionado
+ *     responses:
+ *       200:
+ *         description: Selección registrada con éxito.
+ *       400:
+ *         description: Solicitud incorrecta. Falta el parámetro numeroPrecinto.
+ *       401:
+ *         description: No autorizado. No se encontró una sesión activa.
+ *       500:
+ *         description: Error interno del servidor.
+ */
+  static seleccionarBolsin(req: Request, res: Response): void {
+    try {
+      const token = GestorLogin.obtenerToken(req);
+      const sesion = Sesion.buscarPorToken(token);
+      if (!sesion) {
+        res.status(401).json({ error: 'No hay una sesión activa con un usuario logueado.' });
+        return;
+      }
+
+      const { numeroPrecinto } = req.body;
+      if (numeroPrecinto === undefined) {
+        res.status(400).json({ error: 'El parámetro numeroPrecinto es requerido en el cuerpo (body).' });
+        return;
+      }
+
+      GestorSegBolsines.tomarSeleccionBolsin(numeroPrecinto);
+      res.status(200).json({ exito: true, nroBolsinSeleccionado: numeroPrecinto });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
