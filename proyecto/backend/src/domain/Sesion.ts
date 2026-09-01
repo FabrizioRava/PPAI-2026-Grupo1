@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { Usuario } from './Usuario';
 import { ComisionMedica } from './ComisionMedica';
 
@@ -17,7 +18,7 @@ export class Sesion {
     this.usuario = usuario;
     this.fechaHoraInicio = new Date();
     this.fechaHoraFin = null;
-    
+
     const empleado = usuario.obtenerEmpleado();
     this.cmUsuarioLogueado = empleado.obtenerCM().getNombreCM();
     this.token = token;
@@ -43,11 +44,6 @@ export class Sesion {
   // Estado calculado a partir de fechaHoraFin (evita romper código externo)
   estaActiva(): boolean {
     return this.fechaHoraFin === null;
-  }
-
-  /** @deprecated Usa cerrarSesion() o setFechaHoraFin() */
-  setActiva(activa: boolean): void {
-    this.fechaHoraFin = activa ? null : (this.fechaHoraFin ?? new Date());
   }
 
   getFechaHoraInicio(): Date {
@@ -76,7 +72,7 @@ export class Sesion {
 
   // --- Comportamiento ---
   static iniciarSesion(usuario: Usuario): Sesion {
-    const token = `sesion-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    const token = randomUUID();
     const sesion = new Sesion(usuario, token);
     Sesion.sesiones.set(token, sesion);
     return sesion;
@@ -86,7 +82,7 @@ export class Sesion {
     if (!token) return false;
     const sesion = Sesion.sesiones.get(token);
     if (!sesion) return false;
-    
+
     sesion.fechaHoraFin = new Date();
     Sesion.sesiones.delete(token);
     return true;
