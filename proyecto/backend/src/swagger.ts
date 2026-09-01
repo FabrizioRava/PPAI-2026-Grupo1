@@ -8,7 +8,8 @@ const options = {
     info: {
       title: 'API de Seguimiento de Bolsines (PPAI)',
       version: '1.0.0',
-      description: 'Documentación de los endpoints de la API del proyecto Bolsines, incluyendo Autenticación y Seguimiento.',
+      description:
+        'Documentación de los endpoints de la API del proyecto Bolsines, incluyendo Autenticación y Seguimiento.',
     },
     servers: [
       {
@@ -26,7 +27,7 @@ const options = {
       },
     },
   },
-  apis: ['./src/controllers/*.ts', './src/server.ts', './dist/controllers/*.js', './dist/server.js'],
+  apis: ['./src/http/*.ts', './src/server.ts', './dist/http/*.js', './dist/server.js'],
 };
 
 const specs = swaggerJsdoc(options);
