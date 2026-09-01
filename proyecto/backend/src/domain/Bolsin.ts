@@ -32,7 +32,7 @@ export class Bolsin {
     this.numeroPrecinto = numeroPrecinto;
     // CORRECCIÓN: Asigna el parámetro si viene en el mock, sino usa el id por defecto.
     // Evita llamar a métodos de instancia en el constructor.
-    this.numeroBolsin = numeroBolsin !== undefined ? numeroBolsin : id; 
+    this.numeroBolsin = numeroBolsin !== undefined ? numeroBolsin : id;
   }
 
   // --- Getters / Setters ---
@@ -96,12 +96,11 @@ export class Bolsin {
     this.numeroBolsin = numeroBolsin;
   }
 
-
   // --- Comportamiento (Mensajes del Diagrama de Secuencia) ---
 
   // Diagrama: G -> B: sosEnviado()
   sosEnviado(): boolean {
-    const actual = this.cambiosDeEstado.find(c => c.sosActual());
+    const actual = this.cambiosDeEstado.find((c) => c.sosActual());
     if (!actual) return false;
     return actual.sosEnviado();
   }
@@ -118,7 +117,7 @@ export class Bolsin {
 
   // Soporte para armar el objeto plano de la ubicación
   getEstadoActual(): EstadoBolsin | null {
-    const actual = this.cambiosDeEstado.find(c => c.sosActual());
+    const actual = this.cambiosDeEstado.find((c) => c.sosActual());
     return actual ? actual.getEstadoBolsin() : null;
   }
 

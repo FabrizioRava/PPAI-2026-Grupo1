@@ -6,12 +6,7 @@ export class CambioDeEstadoBolsin {
   private fechaHoraInicio: Date;
   private fechaHoraFin: Date | null;
 
-  constructor(
-    id: number,
-    estadoBolsin: EstadoBolsin,
-    fechaHoraInicio: Date,
-    fechaHoraFin: Date | null = null
-  ) {
+  constructor(id: number, estadoBolsin: EstadoBolsin, fechaHoraInicio: Date, fechaHoraFin: Date | null = null) {
     this.id = id;
     this.estadoBolsin = estadoBolsin;
     this.fechaHoraInicio = fechaHoraInicio;

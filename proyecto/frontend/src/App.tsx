@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Login } from './screens/Login';
 import { MenuPrincipal } from './screens/MenuPrincipal';
 import { PantSegBolsines } from './screens/PantSegBolsines';
@@ -40,7 +40,7 @@ export function App() {
   if (inicializando) {
     return (
       <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-[#fbe7df] via-[#f4eef3] to-[#efe7f0]">
-            <div className="w-8 h-8 border-2 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-2 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -63,10 +63,7 @@ export function App() {
 
     case 'seguimiento':
       return usuario ? (
-        <PantSegBolsines
-          usuario={usuario}
-          onVolver={() => setPantallaActual('menu')}
-        />
+        <PantSegBolsines usuario={usuario} onVolver={() => setPantallaActual('menu')} />
       ) : (
         <Login onLoginExitoso={manejarLoginExitoso} />
       );
