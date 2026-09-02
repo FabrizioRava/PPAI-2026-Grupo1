@@ -94,7 +94,6 @@ class DispositivoGPS <<Entity>> {
 class Sesion <<Entity>> {
   <font color="#8C2400">- fechaHoraInicio : Date</font>
   <font color="#8C2400">- fechaHoraFin : Date</font>
-  <font color="#8C2400">- cmUsuarioLogueado : String</font>
   --
   <font color="#1B6629">+ buscarCMUsuarioLogueado()</font>
 }
@@ -110,8 +109,6 @@ class Empleado <<Entity>> {
   <font color="#8C2400">- nombre : String</font>
   <font color="#8C2400">- apellido : String</font>
   <font color="#8C2400">- mail : String</font>
-  <font color="#8C2400">- nombreCM : String</font>
-  <font color="#8C2400">- codigoCM : String</font>
   --
   <font color="#1B6629">+ esTuCM()</font>
   <font color="#1B6629">+ obtenerCM()</font>
