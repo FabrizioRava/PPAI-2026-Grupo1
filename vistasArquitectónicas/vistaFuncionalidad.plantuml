@@ -1,0 +1,14 @@
+@startuml usecaseDiagram
+left to right direction
+
+actor "Encargado de bolsines" as EB
+usecase "19.Generar bolsin" as U19
+usecase "20.Modificar bolsin" as U20
+usecase "21.Eliminar bolsin" as U21
+usecase "22.Consultar bolsin " as U22
+
+EB --> U19
+EB --> U20
+EB --> U21
+EB --> U22
+@enduml
