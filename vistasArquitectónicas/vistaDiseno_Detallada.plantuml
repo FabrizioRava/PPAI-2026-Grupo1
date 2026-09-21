@@ -39,12 +39,12 @@ component "ServicioUsuariosyAccesos" <<microservicio>> as SU {
     component "Permiso" as SU_Pe
     component "PersistenciaServUsuarios" as SU_DB #AFFFFF
     
-    SU_S -> SU_U
-    SU_U -> SU_P
-    SU_Pe -> SU_P
-    SU_DB -> SU_U
-    SU_DB -u-> SU_S
-    SU_DB -u-> SU_Pe
+    SU_S ..> SU_U
+    SU_U ..> SU_P
+    SU_Pe ..> SU_P
+    SU_DB ..> SU_U
+    SU_DB .u.> SU_S
+    SU_DB .u.> SU_Pe
 }
 database "BD\nUsuariosyAccesos" as BDUsuariosyAccesos
 SU_DB .d.> BDUsuariosyAccesos

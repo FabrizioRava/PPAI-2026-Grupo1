@@ -16,15 +16,28 @@ skinparam database {
   BorderColor Black
 }
 
+skinparam rectangle {
+  BackgroundColor transparent
+  BorderColor Black
+}
+
 ' ==========================================
 ' CAPA 1: Interfaces y Sistemas Externos
 ' ==========================================
 component "WebUI" as WebUI <<subsistema>>
 
+rectangle "Externos" as SistemasExternos {
+  component "ServicioDispositivoGPS" as ServicioDispositivoGPS
+  component "ServicioMapa" as ServicioMapa
+  component "ServicioMailServer" as ServicioMailServer
+  component "ServicioPowerBI" as ServicioPowerBI
+}
+
 ' ==========================================
 ' CAPA 2: Gateways (Enrutamiento)
 ' ==========================================
 component "WebAPIGateway" as WebGateway <<gateway>>
+component "PublicAPIGateway" as PublicGateway <<gateway>>
 
 ' ==========================================
 ' CAPA 3: Microservicios y Bases de Datos
@@ -67,6 +80,10 @@ SVC_UsuariosyAccesos - DB_UsuariosyAccesos
 ' ==========================================
 ' Entradas a los Gateways
 WebUI ---> WebGateway
+ServicioDispositivoGPS ---> PublicGateway
+ServicioMapa ---> PublicGateway
+ServicioMailServer ---> PublicGateway
+ServicioPowerBI ---> PublicGateway
 
 ' Distribución desde WebAPIGateway
 WebGateway ---> SVC_SeguimientoBolsin
@@ -76,13 +93,10 @@ WebGateway ---> SVC_Documentacion
 WebGateway ---> SVC_UsuariosyAccesos
 WebGateway ---> SVC_Remito
 
-' CU36 arma el mapa con coordenadas -> SeguimientoBolsin llama a los genéricos
-SVC_SeguimientoBolsin --> SVC_Integracion
-SVC_SeguimientoBolsin --> SVC_IntegracionMapa
-
-' CU28/29 notifica por mail -> lo dispara el servicio que gestiona el bolsín
-SVC_Bolsin --> SVC_NotificacionMail
-' CU37/38 generan reporte/estadística -> el servicio de Bolsin/Seguimiento llama a PowerBI
-SVC_Bolsin --> SVC_IntegracionPowerBI
+' Distribución desde PublicAPIGateway
+PublicGateway --> SVC_Integracion
+PublicGateway --> SVC_IntegracionMapa
+PublicGateway --> SVC_NotificacionMail
+PublicGateway --> SVC_IntegracionPowerBI
 
 @enduml

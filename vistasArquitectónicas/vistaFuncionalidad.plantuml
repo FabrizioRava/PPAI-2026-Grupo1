@@ -12,6 +12,7 @@ usecase "22.Consultar bolsin" as U22
 usecase "5. Iniciar sesion" as U5
 usecase "37. Generar reporte de bolsines en transito" as U37
 usecase "38. Generar estadistica de movimiento de bolsines" as U38
+usecase "27. Registrar el retiro de bolsines" as U27
 
 EB --|>U
 GM --|>U
@@ -21,6 +22,7 @@ EB --> U19
 EB --> U20
 EB --> U21
 EB --> U22
+EB --> U27
 
 GM --> U37
 GM --> U38
