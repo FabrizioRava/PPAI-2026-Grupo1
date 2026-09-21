@@ -1,0 +1,53 @@
+@startuml separacionDominios
+' Evitar sombras para un aspecto más plano y similar a la imagen
+skinparam shadowing false
+
+' Configuración de los contenedores
+skinparam rectangle {
+    BackgroundColor White
+    BorderColor Black
+    fontColor Black
+}
+
+' Configuración de los óvalos (casos de uso) y sus colores por estereotipo
+skinparam usecase {
+    BackgroundColor<<Soporte>> #F8A145
+    BackgroundColor<<Generico>> #B09EE6
+    BackgroundColor<<Core>> #FFB6C1
+    BorderColor Black
+    FontColor Black
+}
+
+' ==========================================
+' Service Containment Space: Dominios de Soporte
+' ==========================================
+rectangle "Service Containment Space\nDominios de Soporte" as ContenedorSoporte {
+    usecase "ComisionMedica" as comision <<Soporte>>
+    usecase "Documentacion" as documentacion <<Soporte>>
+    usecase "Remito" as remito <<Soporte>>
+}
+
+' ==========================================
+' Service Containment Space: Dominios Genéricos
+' ==========================================
+rectangle "Service Containment Space\nDominios Genéricos" as ContenedorGenericos {
+    usecase "Usuarios\ny Accesos" as usuarios <<Generico>>
+    usecase "notificacionMail" as mail <<Generico>>
+    usecase "integracionPowerBI" as powerbi <<Generico>>
+    usecase "integracionMapa" as mapa <<Generico>>
+    usecase "integracionDispositivoGPS" as gps <<Generico>>
+}
+
+' ==========================================
+' Service Containment Space: Dominios Core
+' ==========================================
+rectangle "Service Containment Space\nDominios Core" as ContenedorCore {
+    usecase "SeguimientoBolsin" as seguimiento <<Core>>
+    usecase "Bolsin" as bolsin <<Core>>
+}
+
+' Enlaces ocultos para forzar la alineación horizontal de izquierda a derecha
+ContenedorSoporte -[hidden]right-> ContenedorGenericos
+ContenedorGenericos -[hidden]right-> ContenedorCore
+
+@enduml

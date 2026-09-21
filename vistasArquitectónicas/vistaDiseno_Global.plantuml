@@ -1,28 +1,88 @@
-@startuml VistaDiseno_Global
+@startuml vistaDiseno_Global
+title Vista de Diseño global
+
+left to right direction
 skinparam componentStyle rectangle
-skinparam shadowing false
 
-package "CapaPresentacionWeb" <<subsystem>> as PresWeb
-package "CapaPresentacionMobile" <<subsystem>> as PresMobile
-
-package "CapaLogicaNegocio" {
-  component "SubsistemaDominioCore1" as SC1 <<subsystem>>
-  component "SubsistemaDominioCore2" as SC2 <<subsystem>>
-  component "SubsistemaGenerico1"    as SG1 <<subsystem>>
+skinparam component {
+  BackgroundColor<<gateway>> #85C1E9
+  BackgroundColor<<microservicio>> #FADBD8
+  BackgroundColor<<subsistema>> #F8F9F9
+  BorderColor Black
 }
 
-package "CapaAdministracionPersistencia" {
-  component "Persistencia" as PERS <<subsystem>>
-  database  "BaseDeDatos"  as BD
+skinparam database {
+  BackgroundColor White
+  BorderColor Black
 }
 
-' A nivel global alcanza con flechas simples entre cajas,
-' sin mostrar todavía las interfaces puntuales
-PresWeb    --> SC1
-PresMobile --> SC1
-SC1        --> SC2
-SC1        --> SG1
-SC1        --> PERS
-PERS       --> BD
+' ==========================================
+' CAPA 1: Interfaces y Sistemas Externos
+' ==========================================
+component "WebUI" as WebUI <<subsistema>>
+
+' ==========================================
+' CAPA 2: Gateways (Enrutamiento)
+' ==========================================
+component "WebAPIGateway" as WebGateway <<gateway>>
+
+' ==========================================
+' CAPA 3: Microservicios y Bases de Datos
+' ==========================================
+component "ServicioSeguimientoBolsin" as SVC_SeguimientoBolsin <<microservicio>>
+database "BD\nSeguimientoBolsin" as DB_SeguimientoBolsin
+
+component "ServicioBolsin" as SVC_Bolsin <<microservicio>>
+database "BD\nBolsin" as DB_Bolsin
+
+component "ServicioComisionMedica" as SVC_ComisionMedica <<microservicio>>
+database "BD\nComisionMedica" as DB_ComisionMedica
+
+component "ServicioDocumentacion" as SVC_Documentacion <<microservicio>>
+database "BD\nDocumentacion" as DB_Documentacion
+
+component "ServicioUsuariosyAccesos" as SVC_UsuariosyAccesos <<microservicio>>
+database "BD\nUsuariosyAccesos" as DB_UsuariosyAccesos
+
+component "ServicioRemito" as SVC_Remito <<microservicio>>
+database "BDRemito" as DB_Remito
+
+component "IntegracionDispositivoGPS" as SVC_Integracion <<microservicio>>
+component "IntegracionMapa" as SVC_IntegracionMapa <<microservicio>>
+component "notificacionMail" as SVC_NotificacionMail <<microservicio>>
+component "integracionPowerBI" as SVC_IntegracionPowerBI <<microservicio>>
+' ==========================================
+' RELACIONES: Acoplamiento de Bases de Datos
+' ==========================================
+' Se usa una línea sin flecha para denotar que la BD pertenece al servicio
+SVC_SeguimientoBolsin - DB_SeguimientoBolsin
+SVC_Bolsin - DB_Bolsin
+SVC_ComisionMedica - DB_ComisionMedica
+SVC_Documentacion - DB_Documentacion
+SVC_Remito - DB_Remito
+SVC_UsuariosyAccesos - DB_UsuariosyAccesos
+
+' ==========================================
+' RELACIONES: Flujo de solicitudes
+' ==========================================
+' Entradas a los Gateways
+WebUI ---> WebGateway
+
+' Distribución desde WebAPIGateway
+WebGateway ---> SVC_SeguimientoBolsin
+WebGateway ---> SVC_Bolsin
+WebGateway ---> SVC_ComisionMedica
+WebGateway ---> SVC_Documentacion
+WebGateway ---> SVC_UsuariosyAccesos
+WebGateway ---> SVC_Remito
+
+' CU36 arma el mapa con coordenadas -> SeguimientoBolsin llama a los genéricos
+SVC_SeguimientoBolsin --> SVC_Integracion
+SVC_SeguimientoBolsin --> SVC_IntegracionMapa
+
+' CU28/29 notifica por mail -> lo dispara el servicio que gestiona el bolsín
+SVC_Bolsin --> SVC_NotificacionMail
+' CU37/38 generan reporte/estadística -> el servicio de Bolsin/Seguimiento llama a PowerBI
+SVC_Bolsin --> SVC_IntegracionPowerBI
 
 @enduml
