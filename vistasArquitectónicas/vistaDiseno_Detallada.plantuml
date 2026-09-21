@@ -1,0 +1,29 @@
+@startuml VistaDiseno_Detallada
+
+package "SubsistemaX" <<subsystem>> {
+  [ComponenteA]
+  [ComponenteB]
+
+  ' interfaz PROVISTA por ComponenteA (línea simple hacia el círculo)
+  () "ILogicaX" as ILogicaX
+  ComponenteA -- ILogicaX
+
+  ' interfaz REQUERIDA por ComponenteB (flecha punteada hacia afuera)
+  () "IAutenticacion" as IAuth
+  ComponenteB ..> IAuth : usa
+}
+
+package "SubsistemaY" <<subsystem>> {
+  [ComponenteC]
+}
+
+' SubsistemaY consume lo que provee SubsistemaX
+SubsistemaY ..> ILogicaX : usa
+
+package "GestionUsuarios" <<subsystem>> {
+  [Sesion]
+  ' Este subsistema PROVEE la interfaz de autenticación
+  Sesion -- IAuth
+}
+
+@enduml

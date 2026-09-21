@@ -1,0 +1,28 @@
+@startuml VistaDiseno_Global
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+package "CapaPresentacionWeb" <<subsystem>> as PresWeb
+package "CapaPresentacionMobile" <<subsystem>> as PresMobile
+
+package "CapaLogicaNegocio" {
+  component "SubsistemaDominioCore1" as SC1 <<subsystem>>
+  component "SubsistemaDominioCore2" as SC2 <<subsystem>>
+  component "SubsistemaGenerico1"    as SG1 <<subsystem>>
+}
+
+package "CapaAdministracionPersistencia" {
+  component "Persistencia" as PERS <<subsystem>>
+  database  "BaseDeDatos"  as BD
+}
+
+' A nivel global alcanza con flechas simples entre cajas,
+' sin mostrar todavía las interfaces puntuales
+PresWeb    --> SC1
+PresMobile --> SC1
+SC1        --> SC2
+SC1        --> SG1
+SC1        --> PERS
+PERS       --> BD
+
+@enduml

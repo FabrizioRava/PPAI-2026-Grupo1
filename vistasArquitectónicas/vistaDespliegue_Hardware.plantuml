@@ -1,0 +1,22 @@
+@startuml VistaDespliegue_Hardware
+skinparam nodeStyle rectangle
+
+node "Cliente Web" <<web client>> as CW
+node "Smartphone"  <<mobile>>     as SP
+
+cloud "Internet / Red" as NET
+
+node "Servidor Web y de Aplicaciones" as SRV
+database "Servidor de Base de Datos" as DB
+
+node "Servidor Externo 1" <<externo>> as EXT1
+node "Servidor Externo 2" <<externo>> as EXT2
+
+CW  -- NET
+SP  -- NET
+NET -- SRV
+SRV -- DB
+NET -- EXT1
+NET -- EXT2
+
+@enduml

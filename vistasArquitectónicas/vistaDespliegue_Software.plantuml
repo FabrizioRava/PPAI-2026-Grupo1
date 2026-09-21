@@ -1,0 +1,34 @@
+@startuml VistaDespliegue_Software
+skinparam componentStyle rectangle
+
+node "Smartphone" <<android>> as And {
+  component "CapaPresentacionMobile" <<subsystem>> as PresMobileAnd
+}
+
+node "PC Usuario" <<web client>> as PC {
+  component "Browser"
+}
+
+node "Servidor Web y de Aplicaciones" as SRV {
+  component "Webserver"
+  component "CapaPresentacionWeb"   <<subsystem>>
+  component "SubsistemaDominioCore" <<subsystem>>
+  component "SubsistemaGenerico"    <<subsystem>>
+  component "Persistencia"          <<subsystem>>
+}
+
+node "Servidor de BD" as SRVBD {
+  database "BaseDeDatos" <<database>>
+}
+
+node "Servidor Externo" <<externo>> as EXT {
+  component "ServicioExterno" as SvcExt
+}
+
+PresMobileAnd --> SRV : HTTPS/REST
+Browser       --> SRV : HTTPS
+
+SRV --> SRVBD
+SRV --> EXT
+
+@enduml
