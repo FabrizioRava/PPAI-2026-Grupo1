@@ -1,10 +1,18 @@
+'1 Subsistema WebUI con interfaces 
+'2 WebAPIGateway con papel
+'3 PublicAPIGateway con papel
+'4. Microservicios propios 
+    ' con chupetin en WebAPIGateway
+    ' con componente de persistencia relacionado con la base de datos
+'5. Microservicios externos con chupetin en PublicAPIGateway
+
 @startuml VistaDiseno_Detallada
 title Vista de Diseño de Componentes y Microservicios
 
 ' Configuración global para estilo y disposición
 skinparam componentStyle rectangle
 skinparam nodesep 20
-skinparam ranksep 40
+skinparam ranksep 60
 skinparam linetype polyline
 skinparam DefaultTextAlignment center
 
@@ -13,6 +21,7 @@ skinparam component {
     BackgroundColor<<subsistema>> #FADBD8
     BackgroundColor<<microservicio>> #FADBD8
     BackgroundColor<<gateway>> #99CCFF
+    BackgroundColor<<persistencia>> #AFFFFF
     BackgroundColor #FFFFFF
 }
 
@@ -37,17 +46,196 @@ component "WebUI" <<subsistema>> as WebUI #FADBD8 {
 ' ==========================================
 ' CAPA MEDIA: Gateways
 ' ==========================================
-component "PublicAPIGateway" <<gateway>> as PAG
 component "WebAPIGateway" <<gateway>> as WAG
+component "PublicAPIGateway" <<gateway>> as PAG
 
 ' ==========================================
-' INTERFACES: WebUI Sockets
+' CAPA INFERIOR: Integración y Otros Microservicios
 ' ==========================================
-interface "IWebUIRestApi" as W_IWU
-WebUI -u- W_IWU
+database "BD\nSeguimientoBolsin" as BDSeguimientoBolsin
+component "ServicioSeguimientoBolsin" <<subsistema>> as ServicioSeguimientoBolsin {
+    component "PersistenciaServSeguimientoBolsin" <<persistencia>> as ServicioSeguimientoBolsin_DB
+    component "bolsin" as SSB_Bolsin
+    component "dispositivoGPS" as SSB_DispositivoGPS
+    component "ubicacion" as SSB_Ubicacion
+    component "fechaHora" as SSB_FechaHora
+    ServicioSeguimientoBolsin_DB .u.> SSB_Bolsin
+    ServicioSeguimientoBolsin_DB .u.> SSB_DispositivoGPS
+    ServicioSeguimientoBolsin_DB .u.> SSB_Ubicacion
+    ServicioSeguimientoBolsin_DB .u.> SSB_FechaHora
+    ServicioSeguimientoBolsin_DB .u.> BDSeguimientoBolsin
+    SSB_Bolsin ..> SSB_DispositivoGPS
+    SSB_DispositivoGPS ..> SSB_Ubicacion
+    SSB_DispositivoGPS ..> SSB_FechaHora
+}
+
+database "BD\nBolsin" as BDBolsin
+component "ServicioBolsin" <<subsistema>> as ServicioBolsin {
+    component "PersistenciaServBolsin" <<persistencia>> as ServicioBolsin_DB 
+    component "numeroPrecinto" as SB_NumeroPrecinto
+    component "numeroBolsin" as SB_NumeroBolsin
+    component "estadoBolsin" as SB_EstadoBolsin
+    ServicioBolsin_DB .u.> BDBolsin
+    ServicioBolsin_DB .u.> SB_NumeroPrecinto
+    ServicioBolsin_DB .u.> SB_NumeroBolsin
+    ServicioBolsin_DB .u.> SB_EstadoBolsin
+}
+
+database "BD\nComisionMedica" as BDComisionMedica
+component "ServicioComisionMedica" <<subsistema>> as ServicioComisionMedica {
+    component "PersistenciaServComisionMedica" <<persistencia>> as ServicioComisionMedica_DB 
+    component "ComisionMedica" as SCM_ComisionMedica
+    component "codigoComisionMedica" as SCM_CodigoComisionMedica
+    ServicioComisionMedica_DB .u.> SCM_ComisionMedica
+    ServicioComisionMedica_DB .u.> SCM_CodigoComisionMedica
+    ServicioComisionMedica_DB .u.> BDComisionMedica
+    SCM_ComisionMedica ..> SCM_CodigoComisionMedica
+}
+
+database "BD\nDocumentacion" as BDDocumentacion
+component "ServicioDocumentacion" <<subsistema>> as ServicioDocumentacion {
+    component "PersistenciaServDocumentacion" <<persistencia>> as ServicioDocumentacion_DB
+    component "Documentacion" as SD_Documentacion
+    component "asunto" as SD_Asunto
+    component "fechaCreacion" as SD_FechaCreacion
+    component "numero" as SD_Numero
+    component "estadoDocumentacion" as SD_EstadoDocumentacion
+    ServicioDocumentacion_DB .u.> SD_Documentacion
+    ServicioDocumentacion_DB .u.> SD_Asunto
+    ServicioDocumentacion_DB .u.> SD_FechaCreacion
+    ServicioDocumentacion_DB .u.> SD_Numero
+    ServicioDocumentacion_DB .u.> BDDocumentacion
+    ServicioDocumentacion_DB .u.> SD_EstadoDocumentacion
+    SD_Documentacion ..> SD_EstadoDocumentacion
+    SD_Documentacion ..> SD_Asunto
+    SD_Documentacion ..> SD_FechaCreacion
+    SD_Documentacion ..> SD_Numero
+}
+
+database "BD\nRemito" as BDRemito
+component "ServicioRemito" <<subsistema>> as ServicioRemito {
+    component "PersistenciaServRemito" <<persistencia>> as ServicioRemito_DB
+    component "Remito" as SR_Remito
+    component "numeroRemito" as SR_NumeroRemito
+    component "fechaEmision" as SR_FechaEmision
+    component "estadoRemito" as SR_EstadoRemito
+    ServicioRemito_DB .u.> BDRemito
+    ServicioRemito_DB .u.> SR_Remito
+    ServicioRemito_DB .u.> SR_NumeroRemito
+    ServicioRemito_DB .u.> SR_FechaEmision
+    ServicioRemito_DB .u.> SR_EstadoRemito
+    SR_Remito ..> SR_NumeroRemito
+    SR_Remito ..> SR_FechaEmision
+    SR_Remito ..> SR_EstadoRemito
+}
+
+database "BD\nUsuarios" as BDUsuarios
+component "ServicioUsuarios" <<subsistema>> as ServicioUsuarios {
+    component "PersistenciaServUsuarios" <<persistencia>> as ServicioUsuarios_DB
+    component "Usuario" as SU_Usuario
+    component "Perfil" as SU_Perfil
+    component "Sesión" as SU_Sesion
+    component "Permiso" as SU_Permiso
+    ServicioUsuarios_DB .u.> BDUsuarios
+    ServicioUsuarios_DB .u.> SU_Permiso
+    ServicioUsuarios_DB .u.> SU_Sesion  
+    ServicioUsuarios_DB .u.> SU_Perfil
+    ServicioUsuarios_DB .u.> SU_Usuario
+    SU_Sesion ..> SU_Usuario
+    SU_Usuario ..> SU_Perfil
+    SU_Perfil ..> SU_Permiso
+}
+
+
+
+component "ServicioIntegracionDispositivoGPS" <<subsistema>> as ServicioIntegracionDispositivoGPS
+component "ServicioIntegracionMapa" <<subsistema>> as ServicioIntegracionMapa 
+component "ServicioNotificacionMail" <<subsistema>> as ServicioNotificacionMail 
+component "ServicioIntegracionPowerBI" <<subsistema>> as ServicioIntegracionPowerBI 
+
 
 ' ==========================================
-' INTERFACES: WebApiGateway Lollipops
+' DISPOSICIÓN EN CUADRÍCULA (GRID LAYOUT)
 ' ==========================================
-interface "IWebApiGateway" as WAG_IWU
-WAG -u-( WAG_IWU
+' Forzar a WAG y PAG a estar en el centro, debajo de WebUI
+WebUI -[hidden]d-> WAG
+WAG -[hidden]r-> PAG
+
+' Forzar a los microservicios a estar en filas inferiores
+WAG -[hidden]d-> ServicioSeguimientoBolsin
+PAG -[hidden]d-> ServicioIntegracionDispositivoGPS
+
+' Alinear los microservicios del WAG horizontalmente
+ServicioSeguimientoBolsin -[hidden]r-> ServicioBolsin
+ServicioBolsin -[hidden]r-> ServicioComisionMedica
+ServicioComisionMedica -[hidden]r-> ServicioDocumentacion
+ServicioDocumentacion -[hidden]r-> ServicioRemito
+ServicioRemito -[hidden]r-> ServicioUsuarios
+
+' Alinear los microservicios del PAG horizontalmente
+ServicioIntegracionDispositivoGPS -[hidden]r-> ServicioIntegracionMapa
+ServicioIntegracionMapa -[hidden]r-> ServicioNotificacionMail
+ServicioNotificacionMail -[hidden]r-> ServicioIntegracionPowerBI
+
+
+' ==========================================
+' INTERFACES: Microservicios (Proveen hacia arriba)
+' ==========================================
+interface "IServicioSeguimientoBolsin" as SSB_I
+ServicioSeguimientoBolsin -u- SSB_I
+
+interface "IServicioBolsin" as SB_I
+ServicioBolsin -u- SB_I
+
+interface "IServicioComisionMedica" as SCM_I
+ServicioComisionMedica -u- SCM_I
+
+interface "IServicioDocumentacion" as SD_I
+ServicioDocumentacion -u- SD_I
+
+interface "IServicioRemito" as SR_I
+ServicioRemito -u- SR_I
+
+interface "IServicioUsuarios" as SU_I
+ServicioUsuarios -u- SU_I
+
+interface "IServicioIntegracionDispositivoGPS" as SIDG_I
+ServicioIntegracionDispositivoGPS -u- SIDG_I    
+
+interface "IServicioIntegracionMapa" as SIM_I
+ServicioIntegracionMapa -u- SIM_I   
+
+interface "IServicioNotificacionMail" as SNM_I
+ServicioNotificacionMail -u- SNM_I  
+
+interface "IServicioIntegracionPowerBI" as SIPBI_I
+ServicioIntegracionPowerBI -u- SIPBI_I  
+
+' ==========================================
+' INTERFACES: Comunicación WebUI -> WAG
+' ==========================================
+interface "IWebUIRestApi" as WAG_IWU
+' El WAG provee la interfaz hacia arriba
+WAG -u- WAG_IWU
+' La WebUI consume la interfaz hacia abajo
+WebUI -d-( WAG_IWU
+
+' ==========================================
+' INTERFACES: WebApiGateway Lollipops (Consumen hacia abajo)
+' ==========================================
+WAG -d-( SSB_I
+WAG -d-( SB_I
+WAG -d-( SCM_I
+WAG -d-( SD_I
+WAG -d-( SR_I
+WAG -d-( SU_I
+
+' ==========================================
+' INTERFACES: PublicApiGateway Lollipops (Consumen hacia abajo)
+' ==========================================
+PAG -d-( SIDG_I
+PAG -d-( SIM_I
+PAG -d-( SNM_I
+PAG -d-( SIPBI_I
+
+@enduml
