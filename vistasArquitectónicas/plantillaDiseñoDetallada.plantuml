@@ -1,0 +1,223 @@
+@startuml VistaDiseno_Detallada
+title Vista de Diseño de Componentes y Microservicios
+
+' Configuración global para estilo y disposición
+skinparam componentStyle rectangle
+skinparam nodesep 20
+skinparam ranksep 40
+skinparam linetype polyline
+skinparam DefaultTextAlignment center
+
+' Paleta de colores basada en el diagrama original
+skinparam component {
+    BackgroundColor<<subsistema>> #FADBD8
+    BackgroundColor<<microservicio>> #FADBD8
+    BackgroundColor<<gateway>> #99CCFF
+    BackgroundColor #FFFFFF
+}
+
+skinparam database {
+    BackgroundColor White
+}
+
+' ==========================================
+' CAPA SUPERIOR: WebUI y Microservicios Base
+' ==========================================
+
+component "WebUI" <<subsistema>> as WebUI #FADBD8 {
+    component "SeguimientoBolsinPresWeb" as W_C1 #C4F5A3
+    component "UsuarioPresWeb" as W_C2 #C4F5A3
+    component "PaginaPricipalPresWeb" as W_C3 #C4F5A3
+    
+    ' Forzar apilamiento vertical interno
+    W_C1 -[hidden]d-> W_C2
+    W_C2 -[hidden]d-> W_C3
+}
+
+component "ServicioUsuarios" <<microservicio>> as SU {
+    component "Usuario" as SU_U
+    component "Perfil" as SU_P
+    component "Sesión" as SU_S
+    component "Permiso" as SU_Pe
+    component "PersistenciaServUsuarios" as SU_DB #AFFFFF
+    
+    SU_S ..> SU_U
+    SU_U ..> SU_P
+    SU_Pe ..> SU_P
+    SU_DB ..> SU_U
+    SU_DB .u.> SU_S
+    SU_DB .u.> SU_Pe
+}
+database "BD\nUsuarios" as BDUsuarios
+SU_DB .d.> BDUsuarios
+
+component "ServicioDispositivoGPS" <<microservicio>> as SC {
+    component "marca" as SC_marca
+    component "modelo" as SC_modelo
+    component "PersistenciaServDispositivoGPS" as SC_DB #AFFFFF
+    
+    SC_DB .u.> SC_marca
+    SC_marca .u.> SC_modelo
+    SC_DB .u.> SC_modelo
+}
+database "BD\nDispositivoGPS" as BDDispositivoGPS
+SC_DB .d.> BDDispositivoGPS
+
+component "ServicioBolsin" <<microservicio>> as SB {
+    component "Bolsin" as SB_B
+    component "numeroPrecinto" as SB_NP
+    component "numeroBolsin" as SB_NB   
+    component "PersistenciaServBolsin" as SB_DB #AFFFFF
+    
+    SB_DB .u.> SB_B
+    SB_B  .u.> SB_NP
+    SB_B  .u.> SB_NB
+    SB_DB .u.> SB_NP
+    SB_DB .u.> SB_NB
+}
+database "BD\nBolsin" as BDBolsin
+SB_DB .d.> BDBolsin
+
+component "ServicioCultivos" <<microservicio>> as SCul {
+    component "Cultivo" as SCul_C
+    component "PersistenciaServCultivos" as SCul_DB #AFFFFF
+    
+    SCul_DB .u.> SCul_C
+}
+database "BD\nCultivos" as BDCultivos
+SCul_DB .d.> BDCultivos
+
+
+' ==========================================
+' CAPA MEDIA: Gateways
+' ==========================================
+
+component "PublicAPIGateway" <<gateway>> as PAG
+component "WebAPIGateway" <<gateway>> as WAG
+
+' ==========================================
+' CAPA INFERIOR: Integración y Otros Microservicios
+' ==========================================
+
+component "IntegracionMonitorCosechadora" <<microservicio>> as IMC {
+    component "InterfazMonitorCosechadora" as IMC_I
+}
+
+component "ServicioDatosCosecha" <<microservicio>> as SDC {
+    component "DatosCosecha" as SDC_D
+    component "PersistenciaServDatosCosecha" as SDC_DB #AFFFFF
+    
+    SDC_DB .u.> SDC_D
+}
+database "BDDatos\nCosecha" as BDDatosCosecha
+SDC_DB .d.> BDDatosCosecha
+
+component "ServicioLaboreos" <<microservicio>> as SL {
+    component "LaboreoProyecto" as SL_L
+    component "PersistenciaServLaboreos" as SL_DB #AFFFFF
+    
+    SL_DB .u.> SL_L
+}
+database "BD\nLaboreos" as BDLaboreos
+SL_DB .d.> BDLaboreos
+
+component "ServicioProyectosDeCultivo" <<microservicio>> as SPC {
+    component "ProyectoDeCultivo" as SPC_P
+    component "PersistenciaServProyectosCultivo" as SPC_DB #AFFFFF
+    
+    SPC_DB .u.> SPC_P
+}
+database "BDProyecto\nDeCultivo" as BDProyectoDeCultivo
+SPC_DB .d.> BDProyectoDeCultivo
+
+
+' ==========================================
+' DISPOSICIÓN EN CUADRÍCULA (GRID)
+' ==========================================
+WebUI -[hidden]r-> SU
+SU -[hidden]r-> SC
+SC -[hidden]r-> ST
+ST -[hidden]r-> SCul
+
+WebUI -[hidden]d-> PAG
+PAG -[hidden]r-> WAG
+
+PAG -[hidden]d-> IMC
+IMC -[hidden]r-> SDC
+SDC -[hidden]r-> SL
+SL -[hidden]r-> SPC
+
+
+' ==========================================
+' INTERFACES: WebUI Sockets
+' ==========================================
+interface "IWebUIRestApi" as W_IWU
+WebUI -u- W_IWU
+
+' ==========================================
+' INTERFACES: PublicAPIGateway Lollipops
+' ==========================================
+PAG -u- W_IIM
+PAG -u- W_IMC
+
+' ==========================================
+' INTERFACES: WebAPIGateway Lollipops
+' ==========================================
+interface "IAutenticacionRestAPI" as WAG_IA
+interface "IDispositivoGPSRestAPI" as WAG_IDG
+interface "IBolsinRestAPI" as WAG_IB
+interface "ICultivoRestAPI" as WAG_IC
+interface "IProyectoCultivoRestAPI" as WAG_IPC
+interface "ILaboreosRestAPI" as WAG_IL
+interface "IDatosCosechaRestAPI" as WAG_IDC
+
+WAG -u-( WAG_IA
+WAG -u-( WAG_IB
+WAG -u- WAG_IC
+WAG -u- WAG_IPC
+WAG -u- WAG_IL
+WAG -r- WAG_IDC
+WAG -u-( W_IWU
+WAG -u-( WAG_IDG
+' ==========================================
+' INTERFACES: Microservicios Superiores (Hacia abajo)
+' ==========================================
+interface "IAutenticacionRestAPI " as SU_IA
+SU -d- SU_IA
+
+interface "IDispositivoGPSRestAPI" as SC_IDG
+SC -d- SC_IDG
+
+interface "IBolsinRestAPI " as SB_IB
+SB -d- SB_IB
+
+interface "ICultivoRestAPI " as SCul_IC
+SCul -d- SCul_IC
+
+' ==========================================
+' INTERFACES: Microservicios Inferiores (Hacia arriba)
+' ==========================================
+interface "IDatosMonitorCosechadora" as IMC_IDMC
+interface "IIntegracionMonitorRestAPI " as IMC_IIM
+IMC -u- IMC_IDMC
+IMC -u- IMC_IIM
+
+interface "IEstadisticaRendimientoLoteAPI" as SDC_IE
+interface "IDatosCosechaRestAPI " as SDC_IDC
+SDC -u- SDC_IE
+SDC -u- SDC_IDC
+
+interface "IDatosMonitorCosechadora " as SDC_Socket_IDMC
+SDC -d-( SDC_Socket_IDMC
+
+interface "ILaboreosRestAPI " as SL_IL
+interface "IReporteLaboreosAPI" as SL_IRL
+SL -u- SL_IL
+SL -u- SL_IRL
+
+interface "IReporteProyectoCultivoAPI" as SPC_IRP
+interface "IProyectoCultivoRestAPI " as SPC_IPC
+SPC -u- SPC_IRP
+SPC -u- SPC_IPC
+
+@enduml

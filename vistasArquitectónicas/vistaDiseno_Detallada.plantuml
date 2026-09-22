@@ -25,200 +25,29 @@ skinparam database {
 ' ==========================================
 
 component "WebUI" <<subsistema>> as WebUI #FADBD8 {
-    component "SeguimientoBolsinPresWeb" as W_C1 #D5D8DC
-    component "UsuarioPresWeb" as W_C2 #D5D8DC
+    component "SeguimientoBolsinPresWeb" as W_C1 #C4F5A3
+    component "UsuarioPresWeb" as W_C2 #C4F5A3
+    component "PaginaPricipalPresWeb" as W_C3 #C4F5A3
     
     ' Forzar apilamiento vertical interno
     W_C1 -[hidden]d-> W_C2
+    W_C2 -[hidden]d-> W_C3
 }
-
-component "ServicioUsuariosyAccesos" <<microservicio>> as SU {
-    component "Usuario" as SU_U
-    component "Perfil" as SU_P
-    component "Sesión" as SU_S
-    component "Permiso" as SU_Pe
-    component "PersistenciaServUsuarios" as SU_DB #AFFFFF
-    
-    SU_S ..> SU_U
-    SU_U ..> SU_P
-    SU_Pe ..> SU_P
-    SU_DB ..> SU_U
-    SU_DB .u.> SU_S
-    SU_DB .u.> SU_Pe
-}
-database "BD\nUsuariosyAccesos" as BDUsuariosyAccesos
-SU_DB .d.> BDUsuariosyAccesos
-
-component "ServicioCampos" <<microservicio>> as SC {
-    component "Lote" as SC_L
-    component "Campo" as SC_C
-    component "TipoSuelo" as SC_TS
-    component "PersistenciaServCampos" as SC_DB #AFFFFF
-    
-    SC_L ..> SC_C
-    SC_DB .u.> SC_L
-    SC_DB .u.> SC_C
-    SC_DB .u.> SC_TS
-}
-database "BD\nCampos" as BDCampos
-SC_DB .d.> BDCampos
-
-component "ServicioTratamientos" <<microservicio>> as ST {
-    component "Agroquimico" as ST_A
-    component "Plaga" as ST_P
-    component "Tratamiento" as ST_T
-    component "PersistenciaServTratamientos" as ST_DB #AFFFFF
-    
-    ST_T ..> ST_A
-    ST_T ..> ST_P
-    ST_DB .u.> ST_T
-    ST_DB .u.> ST_A
-    ST_DB .u.> ST_P
-}
-database "BD\nTratamientos" as BDTratamientos
-ST_DB .d.> BDTratamientos
-
-component "ServicioCultivos" <<microservicio>> as SCul {
-    component "Cultivo" as SCul_C
-    component "PersistenciaServCultivos" as SCul_DB #AFFFFF
-    
-    SCul_DB .u.> SCul_C
-}
-database "BD\nCultivos" as BDCultivos
-SCul_DB .d.> BDCultivos
-
 
 ' ==========================================
 ' CAPA MEDIA: Gateways
 ' ==========================================
-
 component "PublicAPIGateway" <<gateway>> as PAG
 component "WebAPIGateway" <<gateway>> as WAG
-
-' ==========================================
-' CAPA INFERIOR: Integración y Otros Microservicios
-' ==========================================
-
-component "IntegracionMonitorCosechadora" <<microservicio>> as IMC {
-    component "InterfazMonitorCosechadora" as IMC_I
-}
-
-component "ServicioDatosCosecha" <<microservicio>> as SDC {
-    component "DatosCosecha" as SDC_D
-    component "PersistenciaServDatosCosecha" as SDC_DB #AFFFFF
-    
-    SDC_DB .u.> SDC_D
-}
-database "BDDatos\nCosecha" as BDDatosCosecha
-SDC_DB .d.> BDDatosCosecha
-
-component "ServicioLaboreos" <<microservicio>> as SL {
-    component "LaboreoProyecto" as SL_L
-    component "PersistenciaServLaboreos" as SL_DB #AFFFFF
-    
-    SL_DB .u.> SL_L
-}
-database "BD\nLaboreos" as BDLaboreos
-SL_DB .d.> BDLaboreos
-
-component "ServicioProyectosDeCultivo" <<microservicio>> as SPC {
-    component "ProyectoDeCultivo" as SPC_P
-    component "PersistenciaServProyectosCultivo" as SPC_DB #AFFFFF
-    
-    SPC_DB .u.> SPC_P
-}
-database "BDProyecto\nDeCultivo" as BDProyectoDeCultivo
-SPC_DB .d.> BDProyectoDeCultivo
-
-
-' ==========================================
-' DISPOSICIÓN EN CUADRÍCULA (GRID)
-' ==========================================
-WebUI -[hidden]r-> SU
-SU -[hidden]r-> SC
-SC -[hidden]r-> ST
-ST -[hidden]r-> SCul
-
-WebUI -[hidden]d-> PAG
-PAG -[hidden]r-> WAG
-
-PAG -[hidden]d-> IMC
-IMC -[hidden]r-> SDC
-SDC -[hidden]r-> SL
-SL -[hidden]r-> SPC
-
 
 ' ==========================================
 ' INTERFACES: WebUI Sockets
 ' ==========================================
 interface "IWebUIRestApi" as W_IWU
-WebUI -d-( W_IWU
+WebUI -u- W_IWU
 
 ' ==========================================
-' INTERFACES: PublicAPIGateway Lollipops
+' INTERFACES: WebApiGateway Lollipops
 ' ==========================================
-PAG -u- W_IIM
-PAG -u- W_IWU
-PAG -u- W_IMC
-
-' ==========================================
-' INTERFACES: WebAPIGateway Lollipops
-' ==========================================
-interface "IWebUIRestApi " as WAG_IWU
-interface "IAutenticacionRestAPI" as WAG_IA
-interface "ITratamientoRestAPI" as WAG_IT
-interface "ICultivoRestAPI" as WAG_IC
-interface "IProyectoCultivoRestAPI" as WAG_IPC
-interface "ILaboreosRestAPI" as WAG_IL
-interface "IDatosCosechaRestAPI" as WAG_IDC
-
-WAG -u- WAG_IWU
-WAG -u- WAG_IA
-WAG -u- WAG_IT
-WAG -u- WAG_IC
-WAG -u- WAG_IPC
-WAG -u- WAG_IL
-WAG -r- WAG_IDC
-
-' ==========================================
-' INTERFACES: Microservicios Superiores (Hacia abajo)
-' ==========================================
-interface "IAutenticacionRestAPI " as SU_IA
-SU -d- SU_IA
-
-interface "ICampoRestAPI" as SC_IC
-SC -d- SC_IC
-
-interface "ITratamientoRestAPI " as ST_IT
-ST -d- ST_IT
-
-interface "ICultivoRestAPI " as SCul_IC
-SCul -d- SCul_IC
-
-' ==========================================
-' INTERFACES: Microservicios Inferiores (Hacia arriba)
-' ==========================================
-interface "IDatosMonitorCosechadora" as IMC_IDMC
-interface "IIntegracionMonitorRestAPI " as IMC_IIM
-IMC -u- IMC_IDMC
-IMC -u- IMC_IIM
-
-interface "IEstadisticaRendimientoLoteAPI" as SDC_IE
-interface "IDatosCosechaRestAPI " as SDC_IDC
-SDC -u- SDC_IE
-SDC -u- SDC_IDC
-
-interface "IDatosMonitorCosechadora " as SDC_Socket_IDMC
-SDC -d-( SDC_Socket_IDMC
-
-interface "ILaboreosRestAPI " as SL_IL
-interface "IReporteLaboreosAPI" as SL_IRL
-SL -u- SL_IL
-SL -u- SL_IRL
-
-interface "IReporteProyectoCultivoAPI" as SPC_IRP
-interface "IProyectoCultivoRestAPI " as SPC_IPC
-SPC -u- SPC_IRP
-SPC -u- SPC_IPC
-
-@enduml
+interface "IWebApiGateway" as WAG_IWU
+WAG -u-( WAG_IWU

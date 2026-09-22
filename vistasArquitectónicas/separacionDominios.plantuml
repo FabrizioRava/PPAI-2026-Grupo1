@@ -31,7 +31,7 @@ rectangle "Service Containment Space\nDominios de Soporte" as ContenedorSoporte 
 ' Service Containment Space: Dominios Genéricos
 ' ==========================================
 rectangle "Service Containment Space\nDominios Genéricos" as ContenedorGenericos {
-    usecase "Usuarios\ny Accesos" as usuarios <<Generico>>
+    usecase "Usuarios" as usuarios <<Generico>>
     usecase "notificacionMail" as mail <<Generico>>
     usecase "integracionPowerBI" as powerbi <<Generico>>
     usecase "integracionMapa" as mapa <<Generico>>

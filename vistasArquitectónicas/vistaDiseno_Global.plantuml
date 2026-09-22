@@ -54,8 +54,8 @@ database "BD\nComisionMedica" as DB_ComisionMedica
 component "ServicioDocumentacion" as SVC_Documentacion <<microservicio>>
 database "BD\nDocumentacion" as DB_Documentacion
 
-component "ServicioUsuariosyAccesos" as SVC_UsuariosyAccesos <<microservicio>>
-database "BD\nUsuariosyAccesos" as DB_UsuariosyAccesos
+component "ServicioUsuarios" as SVC_Usuarios <<microservicio>>
+database "BD\nUsuarios" as DB_Usuarios
 
 component "ServicioRemito" as SVC_Remito <<microservicio>>
 database "BDRemito" as DB_Remito
@@ -73,7 +73,7 @@ SVC_Bolsin - DB_Bolsin
 SVC_ComisionMedica - DB_ComisionMedica
 SVC_Documentacion - DB_Documentacion
 SVC_Remito - DB_Remito
-SVC_UsuariosyAccesos - DB_UsuariosyAccesos
+SVC_Usuarios - DB_Usuarios
 
 ' ==========================================
 ' RELACIONES: Flujo de solicitudes
@@ -90,7 +90,7 @@ WebGateway ---> SVC_SeguimientoBolsin
 WebGateway ---> SVC_Bolsin
 WebGateway ---> SVC_ComisionMedica
 WebGateway ---> SVC_Documentacion
-WebGateway ---> SVC_UsuariosyAccesos
+WebGateway ---> SVC_Usuarios
 WebGateway ---> SVC_Remito
 
 ' Distribución desde PublicAPIGateway
