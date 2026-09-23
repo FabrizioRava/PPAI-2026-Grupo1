@@ -1,34 +1,46 @@
 @startuml VistaDespliegue_Software
 skinparam componentStyle rectangle
 
-node "Smartphone" <<android>> as And {
-  component "CapaPresentacionMobile" <<subsystem>> as PresMobileAnd
+skinparam component {
+      BackgroundColor<<gateway>> #99CCFF
+      BackgroundColor<<executable>> #dda0dd
 }
 
-node "PC Usuario" <<web client>> as PC {
-  component "Browser"
+node "ClienteWebResponsive" <<web client>> as ClienteWebResponsive {
+  component ":Explorador" <<executable>>
 }
 
 node "Servidor Web y de Aplicaciones" as SRV {
-  component "Webserver"
-  component "CapaPresentacionWeb"   <<subsystem>>
-  component "SubsistemaDominioCore" <<subsystem>>
-  component "SubsistemaGenerico"    <<subsystem>>
-  component "Persistencia"          <<subsystem>>
+  component "WebAPIGateway" <<gateway>> as WAG
+  component "PublicAPIGateway" <<gateway>> as PAG
+  component "WebServer" <<executable>> as WebServer
+  component "WebUI" <<subsistema>> as WebUI
+
+  database "BD\nSeguimientoBolsin" as BDSeguimientoBolsin
+  component "ServicioSeguimientoBolsin" <<microservicio>> as ServicioSeguimientoBolsin
+  
+  database "BD\nBolsin" as BDBolsin
+  component "ServicioBolsin" <<microservicio>> as ServicioBolsin
+
+  database "BD\nUsuario" as BDUsuario
+  component "ServicioUsuario" <<microservicio>> as ServicioUsuario 
+
+  database "BD\nComisionMedica" as BDComisionMedica 
+  component "ServicioComisionMedica" <<microservicio>> as ServicioComisionMedica
+  
+  database "BD\nDocumentacion" as BDDocumentacion
+  component "ServicioDocumentacion" <<microservicio>> as ServicioDocumentacion
+  
+  database "BD\nRemito" as BDRemito
+  component "ServicioRemito" <<microservicio>> as ServicioRemito
+
+  ServicioSeguimientoBolsin .u.> BDSeguimientoBolsin
+  ServicioBolsin .u.> BDBolsin
+  ServicioUsuario .u.> BDUsuario
+  ServicioComisionMedica .u.> BDComisionMedica  
+  ServicioDocumentacion .u.> BDDocumentacion
+  ServicioRemito .u.> BDRemito
 }
-
-node "Servidor de BD" as SRVBD {
-  database "BaseDeDatos" <<database>>
-}
-
-node "Servidor Externo" <<externo>> as EXT {
-  component "ServicioExterno" as SvcExt
-}
-
-PresMobileAnd --> SRV : HTTPS/REST
-Browser       --> SRV : HTTPS
-
-SRV --> SRVBD
-SRV --> EXT
+ClienteWebResponsive      -- SRV
 
 @enduml
