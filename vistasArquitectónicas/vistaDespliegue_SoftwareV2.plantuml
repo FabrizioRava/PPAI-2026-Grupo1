@@ -1,0 +1,106 @@
+@startuml VistaDespliegue_BDEspejo
+title Vista de Despliegue - Base de Datos Espejada
+
+skinparam nodesep 30
+skinparam ranksep 70
+skinparam padding 4
+skinparam linetype polyline
+skinparam DefaultTextAlignment center
+skinparam shadowing false
+skinparam defaultFontName Arial
+
+skinparam node {
+    BackgroundColor #F2F2F2
+    BorderColor #555555
+}
+
+' Iconos UML: componente y base de datos
+sprite $ico_comp [16x16/16z] Oy02E140pETYX4emSe9981-c4eWuE3WvW28mFWyN9mSdFnESpyZ4nCt415CF9M60skPXk1V3F-W
+sprite $ico_db [20x24/16z] {
+tP253GDH34F3KDn_srh7y2Ve4rdXcCQmUbQ3ob2UGbwXCaaMP1CoZKv8iNoPpY3Mqv1zz3D9aZ2aQw8nMgVOF1xmD6-BRVnLx769yOCf_1pJdhmtsOfiyduI
+NGcgoxVqqJ_m0m
+}
+
+' ==========================================
+' NODOS EXTERNOS (fila superior)
+' ==========================================
+node N_Cliente #F2F2F2 [
+**Cliente Web**
+----
+|<#BFBFBF> <i>«executable»</i>\nExplorador <$ico_comp> |
+]
+
+node N_Correo #DAE8FC [
+**Servidor de Correo**
+----
+|<#C9A7F2> <i>«Externo»</i>\nServidorCorreo <$ico_comp> |
+]
+
+node N_GPS #DAE8FC [
+**Servidor GPS**
+----
+|<#C9A7F2> <i>«Externo»</i>\nProveedorDispositivoGPS <$ico_comp> |
+]
+
+node N_Google #DAE8FC [
+**Servidor Google**
+----
+|<#C9A7F2> <i>«Externo»</i>\nGoogleMaps <$ico_comp> |
+]
+
+node N_PowerBI #DAE8FC [
+**Servidor Microsoft**
+----
+|<#C9A7F2> <i>«Externo»</i>\nPowerBI <$ico_comp> |
+]
+
+' ==========================================
+' HOST EN LA NUBE
+' ==========================================
+node N_Host #F2F2F2 [
+**Host en la Nube**
+----
+|<#6A6AC9> <color:white><i>«gateway»</i></color>\n<color:white>WebAPIGateway</color> <$ico_comp> |<#6A6AC9> <color:white><i>«gateway»</i></color>\n<color:white>PublicAPIGateway</color> <$ico_comp> |<#BFBFBF> <i>«executable»</i>\nServidorWeb <$ico_comp> |<#19C6D1> <i>«Subsistema»</i>\nWebUI <$ico_comp> |
+
+|<#FADBD8> <i>«microservicio»</i>\nServicioSeguimientoBolsin <$ico_comp> |<#FADBD8> <i>«microservicio»</i>\nServicioBolsin <$ico_comp> |<#FADBD8> <i>«microservicio»</i>\nServicioComisionMedica <$ico_comp> |
+|<#FFF2CC> <$ico_db> BDSeguimientoBolsin |<#FFF2CC> <$ico_db> BDBolsin |<#FFF2CC> <$ico_db> BDComisionMedica |
+
+|<#FADBD8> <i>«microservicio»</i>\nServicioDocumentacion <$ico_comp> |<#FADBD8> <i>«microservicio»</i>\nServicioRemito <$ico_comp> |<#FADBD8> <i>«microservicio»</i>\nServicioUsuarios <$ico_comp> |
+|<#FFF2CC> <$ico_db> BDDocumentacion |<#FFF2CC> <$ico_db> BDRemito |<#FFF2CC> <$ico_db> BDUsuarios |
+]
+
+' ==========================================
+' SERVIDOR BD ESPEJO
+' ==========================================
+node N_Espejo #FFF8E1 [
+**Servidor BD Espejo**
+----
+|<#FFF2CC> <$ico_db> BDSeguimientoBolsin (espejo) |
+|<#FFF2CC> <$ico_db> BDBolsin (espejo) |
+|<#FFF2CC> <$ico_db> BDComisionMedica (espejo) |
+|<#FFF2CC> <$ico_db> BDDocumentacion (espejo) |
+|<#FFF2CC> <$ico_db> BDRemito (espejo) |
+|<#FFF2CC> <$ico_db> BDUsuarios (espejo) |
+]
+
+' ==========================================
+' DISPOSICIÓN GENERAL
+' ==========================================
+N_Cliente -[hidden]r- N_Correo
+N_Correo -[hidden]r- N_GPS
+N_GPS -[hidden]r- N_Google
+N_Google -[hidden]r- N_PowerBI
+
+' ==========================================
+' COMUNICACIONES ENTRE NODOS (salen del borde de cada nodo)
+' ==========================================
+N_Cliente -d- N_Host : HTTPS
+N_Correo -d- N_Host : SMTP
+N_GPS -d- N_Host : HTTPS
+N_Google -d- N_Host : HTTPS
+N_PowerBI -d- N_Host : HTTPS
+
+' Replicación de la BD hacia el servidor espejo
+N_Host .r.> N_Espejo : <<mirroring>>
+
+@enduml
