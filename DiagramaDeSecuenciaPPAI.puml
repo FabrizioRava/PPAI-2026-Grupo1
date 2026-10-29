@@ -79,7 +79,7 @@ G -> G ++ : buscarBolsinesEnEstadoEnviado()
 deactivate G
     group Bolsines en estado Enviado [mientras haya bolsines]
         G -> B ++ #FF5B00: sosEnviado()
-            B -> cEstB ++ #FF5B00: sosActual()
+            B -> cEstB ++ #FF5B00: *sosActual()
             deactivate cEstB
             B -> ACE ++ : sosEnviado()
                 ACE -> estB ++: sosEnviado()
