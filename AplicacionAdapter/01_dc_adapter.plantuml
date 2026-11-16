@@ -1,0 +1,30 @@
+@startuml usecaseDiagram
+left to right direction
+
+actor "Administrador del Sistema" as AdminSistema
+actor "Usuario" as Usuario
+actor "Deportista" as Deportista
+
+usecase "8. Registrar tipo de actividad" as U8
+usecase "9. Eliminar tipo de actividad" as U9
+usecase "10. Consultar tipo de actividad" as U10
+usecase "11. Modificar tipo de actividad" as U11
+usecase "20. Iniciar sesion" as U20
+usecase "25. Verificar el avance de la meta de entrenamiento" as U25
+usecase "26. Enviar notificacion de alcance de la meta de entrenamiento" as U26
+usecase "27. Registrar ingesta de alimentos" as U27
+usecase "4. Registrar entrenamiento" as U4
+
+AdminSistema --|> Usuario
+Deportista --|> Usuario
+Usuario --> U20
+
+AdminSistema --> U8
+AdminSistema --> U9
+AdminSistema --> U10
+AdminSistema --> U11
+AdminSistema --> U25
+U26 ..> U25 : <<extends>>
+Deportista --> U4
+
+@enduml
