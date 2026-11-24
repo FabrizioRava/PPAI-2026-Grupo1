@@ -1,0 +1,51 @@
+@startuml VistaDisenoGlobal
+left to right direction
+
+component "WebUI" <<subsistema>> as WUI
+component "WebAPIGateway" as WAG
+component "PublicAPIGateway" as PAG
+
+rectangle "Externos" {
+  component "GPSTracker" as EXT_GPS
+  component "GoogleMapsAPI" as EXT_GMAPS
+  component "OutlookMicrosoftGraphAPI" as EXT_MAIL
+  component "PowerBI" as EXT_PBI
+}
+
+' ================= CORE =================
+component "ServicioBolsin" <<microservicio>> as SBO
+database "BD Bolsin" as BDBO
+
+' ================= SOPORTE =================
+component "ServicioComisionMedica" <<microservicio>> as SCM
+database "BD ComisionMedica" as BDCM
+
+' ================= GENERICOS =================
+component "ServicioAutenticacionUsuarios" <<microservicio>> as SAU
+database "BD Usuarios" as BDUS
+component "ServicioIntegracionGPSTracker" <<microservicio>> as SGPS
+component "ServicioVisualizacionEnMapa" <<microservicio>> as SVM
+component "ServicioNotificacionMail" <<microservicio>> as SNM
+component "ServicioIntegracionPowerBI" <<microservicio>> as SPBI
+
+' ================= FRONT -> WEB GATEWAY =================
+WUI --> WAG
+WAG --> SBO
+WAG --> SCM
+WAG --> SAU
+
+' ================= EXTERNOS -> PUBLIC GATEWAY =================
+EXT_GPS --> PAG
+EXT_GMAPS --> PAG
+EXT_MAIL --> PAG
+EXT_PBI --> PAG
+PAG --> SGPS
+PAG --> SVM
+PAG --> SNM
+PAG --> SPBI
+
+' ================= BASES DE DATOS =================
+SBO - BDBO
+SCM - BDCM
+SAU - BDUS
+@enduml

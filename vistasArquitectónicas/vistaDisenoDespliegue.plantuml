@@ -1,0 +1,114 @@
+@startuml VistaDespliegue
+left to right direction
+' Patrón Single Service per Host desplegado en la nube de Amazon (AWS).
+' RNF 2 y 3: cada base de datos tiene un servidor espejo (Database Mirroring).
+' Como el RNF no indica qué bases espejar, se espejan todas.
+' Cada servidor espejo se conecta con el servidor del servicio que espeja y con el servidor del Gateway.
+
+' ================= CLIENTE =================
+node "Cliente Web" as CLI {
+  component "Navegador" <<executable>>
+}
+
+' ================= GATEWAY =================
+node "Servidor Web y Gateway (AWS)" as GW {
+  component "WebServer" as WS0
+  component "WebUI" <<subsistema>> {
+    component "BolsinPresWeb"
+    component "SeguimientoBolsinPresWeb"
+    component "ComisionMedicaPresWeb"
+    component "ReportesPresWeb"
+    component "UsuarioPresWeb"
+  }
+  component "WebAPIGateway"
+  component "PublicAPIGateway"
+}
+
+' ================= SERVICIOS CON BASE DE DATOS =================
+node "Servidor Bolsin (AWS)" as N_SBO {
+  component "ServicioBolsin" <<microservicio>>
+  database "BD Bolsin"
+}
+node "Servidor BD Bolsin Espejo (AWS)" <<espejo>> as E_SBO {
+  database "BD Bolsin Espejo"
+}
+
+node "Servidor ComisionMedica (AWS)" as N_SCM {
+  component "ServicioComisionMedica" <<microservicio>>
+  database "BD ComisionMedica"
+}
+node "Servidor BD ComisionMedica Espejo (AWS)" <<espejo>> as E_SCM {
+  database "BD ComisionMedica Espejo"
+}
+
+node "Servidor AutenticacionUsuarios (AWS)" as N_SAU {
+  component "ServicioAutenticacionUsuarios" <<microservicio>>
+  database "BD Usuarios"
+}
+node "Servidor BD Usuarios Espejo (AWS)" <<espejo>> as E_SAU {
+  database "BD Usuarios Espejo"
+}
+
+' ================= SERVICIOS DE INTEGRACION =================
+node "Servidor Integracion GPS Tracker (AWS)" as N_SGPS {
+  component "ServicioIntegracionGPSTracker" <<microservicio>>
+  component "WebServer" as WS1
+}
+
+node "Servidor Integracion Google Maps (AWS)" as N_SVM {
+  component "ServicioVisualizacionEnMapa" <<microservicio>>
+  component "WebServer" as WS2
+}
+
+node "Servidor Notificacion Mail (AWS)" as N_SNM {
+  component "ServicioNotificacionMail" <<microservicio>>
+  component "WebServer" as WS3
+}
+
+node "Servidor Integracion Power BI (AWS)" as N_SPBI {
+  component "ServicioIntegracionPowerBI" <<microservicio>>
+  component "WebServer" as WS4
+}
+
+' ================= EXTERNOS =================
+node "Servidor GPS Tracker" <<externo>> as X_GPS {
+  component "ServicioXTR4500L"
+  component "ServicioNavTrackQX7A"
+  component "ServicioGeoPulseMTR900"
+}
+
+node "Servidor Google Maps" <<externo>> as X_GM {
+  component "GoogleMapsAPI"
+}
+
+node "Servidor de Correo" <<externo>> as X_MAIL {
+  component "OutlookMicrosoftGraphAPI"
+}
+
+node "Servidor Power BI" <<externo>> as X_PBI {
+  component "PowerBI"
+}
+
+' ================= COMUNICACIONES =================
+CLI -- GW : HTTPS
+
+GW -- N_SBO
+GW -- N_SCM
+GW -- N_SAU
+GW -- N_SGPS
+GW -- N_SVM
+GW -- N_SNM
+GW -- N_SPBI
+
+GW -- E_SBO
+GW -- E_SCM
+GW -- E_SAU
+N_SBO -- E_SBO
+N_SCM -- E_SCM
+N_SAU -- E_SAU
+
+GW -- X_GPS : HTTPS
+GW -- X_GM : HTTPS
+GW -- X_MAIL : HTTPS
+GW -- X_PBI : HTTPS
+@enduml

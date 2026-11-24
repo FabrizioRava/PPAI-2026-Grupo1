@@ -1,29 +1,48 @@
-@startuml usecaseDiagram
+@startuml VistaFuncionalidad
 left to right direction
 
-actor "Encargado de bolsines" as EB
-actor "Gerente de comision medica" as GM
 actor "Usuario" as U
+actor "Encargado de Bolsines" as EB
+actor "Gerente de Comisión Médica" as GM
+actor "Servidor de Correo" as SC
+actor "GPS Tracker" as GPS
+actor "Servidor Google Maps" as SGM
+actor "Power BI" as PBI
 
-usecase "19.Generar bolsin" as U19
-usecase "20.Modificar bolsin" as U20
-usecase "21.Eliminar bolsin" as U21
-usecase "22.Consultar bolsin" as U22
-usecase "5. Iniciar sesion" as U5
-usecase "37. Generar reporte de bolsines en transito" as U37
-usecase "38. Generar estadistica de movimiento de bolsines" as U38
-usecase "27. Registrar el retiro de bolsines" as U27
+usecase "5. Iniciar sesión" as U5
+usecase "19. Generar bolsín" as U19
+usecase "20. Modificar bolsín" as U20
+usecase "21. Eliminar bolsín" as U21
+usecase "22. Consultar bolsín" as U22
+usecase "28. Registrar recepción\nde bolsín" as U28
+usecase "29. Notificar recepción\nde bolsín" as U29
+usecase "36. Consultar seguimiento\nde bolsines" as U36
+usecase "30. Notificar ubicación\nde bolsín" as U30
+usecase "37. Generar reporte de\nbolsines en tránsito" as U37
+usecase "38. Generar estadística de\nmovimiento de bolsines" as U38
 
-EB --|>U
-GM --|>U
+EB --|> U
+GM --|> U
 
 U --> U5
+
 EB --> U19
 EB --> U20
 EB --> U21
 EB --> U22
-EB --> U27
+EB --> U28
+EB --> U36
+
+U28 ..> U29 : <<include>>
+U36 ..> U30 : <<include>>
 
 GM --> U37
 GM --> U38
+
+U29 --> SC
+U30 --> SC
+U36 --> GPS
+U36 --> SGM
+U37 --> PBI
+U38 --> PBI
 @enduml

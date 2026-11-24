@@ -1,0 +1,126 @@
+@startuml Diagrama Clases Patron Adapter
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam roundcorner 0
+hide circle
+
+skinparam class {
+    BackgroundColor #FFF4E6
+    BorderColor #000000
+    LineColor #000000
+    FontColor #000000
+    FontName Arial
+    StereotypeFontColor #000000
+    StereotypeFontStyle italic
+}
+
+skinparam class {
+    BackgroundColor<<interface>> #C5EBEF
+    BackgroundColor<<adaptable>> #FFF2A8
+}
+
+title Vista estática – Patrón Adapter (CU 36 Consultar seguimiento de bolsines)
+
+' ================= CLASES DEL ANÁLISIS QUE PARTICIPAN =================
+class GestorSegBolsines <<Control>> {
+    - codigoCMUsuarioLogueado: String
+    - numerosBolsines: int[]
+    - codigosCMDestino: String[]
+    - modelosGPSBolsines: String[]
+    - ubicacionesBolsines: String[][]
+    + buscarUbicacionBolsines(): void
+}
+
+class Bolsin <<Entity>> {
+    - numeroBolsin: int
+    - numeroPrecinto: int
+    + getNumeroBolsin(): int
+    + obtenerDispositivoGPS(): void
+}
+
+class DispositivoGPS <<Entity>> {
+    - marca: String
+    - modelo: String
+    + getMarcaGPS(): String
+    + getModeloGPS(): String
+}
+
+' ================= CLIENTE DEL PATRÓN =================
+class InterfazGPSTracker <<Boundary>> {
+    - apiKeysModelosGPS: String[][]
+    - adaptadorGPS: IAdaptadorGPSTracker
+    - ubicacionObtenida: String[]
+    + obtenerUbicacionBolsin(numeroBolsin: int, codigoCMOrigen: String, codigoCMDestino: String, modeloGPS: String): String[]
+    - crearAdaptador(modeloGPS: String): IAdaptadorGPSTracker
+    - obtenerApiKey(modeloGPS: String): String
+}
+
+' ================= TARGET =================
+interface IAdaptadorGPSTracker <<interface>> {
+    + obtenerUbicacionBolsin(numeroBolsin: int, codigoCMOrigen: String, codigoCMDestino: String): String[]
+}
+
+' ================= ADAPTADORES CONCRETOS =================
+class AdaptadorXTR4500L <<adapter>> {
+    - apiKey: String
+    - numeroBolsin: int
+    - codigoCMOrigen: String
+    - ubicacionRecibida: String
+    - ubicacionAdaptada: String[]
+    + new(apiKey: String): AdaptadorXTR4500L
+    + obtenerUbicacionBolsin(numeroBolsin: int, codigoCMOrigen: String, codigoCMDestino: String): String[]
+    - solicitarUbicacion(): void
+    - adaptarUbicacion(): void
+}
+
+class AdaptadorNavTrackQX7A <<adapter>> {
+    - apiKey: String
+    - numeroBolsin: int
+    - codigoCMDestino: String
+    - ubicacionRecibida: String
+    - ubicacionAdaptada: String[]
+    + new(apiKey: String): AdaptadorNavTrackQX7A
+    + obtenerUbicacionBolsin(numeroBolsin: int, codigoCMOrigen: String, codigoCMDestino: String): String[]
+    - solicitarUbicacion(): void
+    - adaptarUbicacion(): void
+}
+
+class AdaptadorGeoPulseMTR900 <<adapter>> {
+    - apiKey: String
+    - numeroBolsin: int
+    - ubicacionRecibida: String[][]
+    - ubicacionAdaptada: String[]
+    + new(apiKey: String): AdaptadorGeoPulseMTR900
+    + obtenerUbicacionBolsin(numeroBolsin: int, codigoCMOrigen: String, codigoCMDestino: String): String[]
+    - solicitarUbicacion(): void
+    - adaptarUbicacion(): void
+}
+
+' ================= ADAPTABLES (SERVICIOS EXTERNOS) =================
+class ServicioXTR4500L <<adaptable>> {
+    + getBolsinLocation(apiKey: String, numeroBolsin: int, codigoCMOrigen: String): String
+}
+
+class ServicioNavTrackQX7A <<adaptable>> {
+    + retrieveTrackingData(apiKey: String, numeroBolsin: int, codigoCMDestino: String): String
+}
+
+class ServicioGeoPulseMTR900 <<adaptable>> {
+    + fetchCargoPositions(apiKey: String, numeroBolsin: int): String[][]
+}
+
+' ================= RELACIONES =================
+GestorSegBolsines ..> Bolsin
+GestorSegBolsines ..> InterfazGPSTracker
+Bolsin --> "1" DispositivoGPS : dispositivoGps
+
+InterfazGPSTracker ..> IAdaptadorGPSTracker
+
+AdaptadorXTR4500L ..|> IAdaptadorGPSTracker
+AdaptadorNavTrackQX7A ..|> IAdaptadorGPSTracker
+AdaptadorGeoPulseMTR900 ..|> IAdaptadorGPSTracker
+
+AdaptadorXTR4500L o--> "1" ServicioXTR4500L : servicio
+AdaptadorNavTrackQX7A o--> "1" ServicioNavTrackQX7A : servicio
+AdaptadorGeoPulseMTR900 o--> "1" ServicioGeoPulseMTR900 : servicio
+@enduml

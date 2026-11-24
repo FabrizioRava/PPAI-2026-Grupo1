@@ -1,0 +1,148 @@
+@startuml VistaDisenoDetallada
+left to right direction
+
+' ================= WEB =================
+component "WebUI" <<subsistema>> as WUI {
+    component "BolsinPresWeb" as P1
+    component "SeguimientoBolsinPresWeb" as P2
+    component "ComisionMedicaPresWeb" as P3
+    component "ReportesPresWeb" as P4
+    component "UsuarioPresWeb" as P5
+}
+
+interface "IWebUIRestAPI" as IWUI
+WUI - IWUI
+
+' ================= WEBGATEWAY =================
+component "WebAPIGateway" as WAG
+label "IWebUIRestAPI" as L1
+label "IBolsinRestAPI" as L2
+label "IComisionMedicaRestAPI" as L5
+label "IAutenticacionUsuariosRestAPI" as L6
+WAG -( L1
+WAG -( L2
+WAG -( L5
+WAG -( L6
+
+' ================= PUBLIC =================
+component "PublicAPIGateway" as PAG
+label "ILocalizacionGPSRestAPI" as L7
+label "IVisualizacionEnMapaRestAPI" as L8
+label "INotificacionMailRestAPI" as L9
+label "IIntegracionPowerBIRestAPI" as L10
+label "IGPSTracker" as L11
+label "IGoogleMaps" as L12
+label "IOutlookMicrosoftGraph" as L13
+label "IPowerBI" as L14
+PAG -( L7
+PAG -( L8
+PAG -( L9
+PAG -( L10
+PAG -( L11
+PAG -( L12
+PAG -( L13
+PAG -( L14
+
+' ================= BOLSIN (CORE) =================
+component "ServicioBolsin" <<microservicio>> as SBO {
+    component "Bolsin" as BO
+    component "SeguimientoBolsin" as SB
+    component "Remito" as RE
+    component "Documentacion" as DO
+    component "PersistenciaBolsin" as PBO
+}
+database "BD Bolsin" as BDBO
+PBO ..> BO
+PBO ..> SB
+PBO ..> RE
+PBO ..> DO
+PBO ..> BDBO
+SB ..> BO
+BO ..> RE
+RE ..> DO
+
+interface "IBolsinRestAPI" as ISBO
+SBO - ISBO
+label "ILocalizacionGPSAPI" as L15
+label "IVisualizacionEnMapaAPI" as L16
+label "INotificacionMailAPI" as L17
+label "IIntegracionPowerBIAPI" as L18
+SBO -( L15
+SBO -( L16
+SBO -( L17
+SBO -( L18
+
+' ================= COMISIONMEDICA (SOPORTE) =================
+component "ServicioComisionMedica" <<microservicio>> as SCM {
+    component "ComisionMedica" as CM
+    component "Empleado" as EM
+    component "PersistenciaComisionMedica" as PCM
+}
+database "BD ComisionMedica" as BDCM
+PCM ..> CM
+PCM ..> EM
+PCM ..> BDCM
+EM ..> CM
+
+interface "IComisionMedicaRestAPI" as ISCM
+SCM - ISCM
+
+' ================= USUARIOS (GENERICO) =================
+component "ServicioAutenticacionUsuarios" <<microservicio>> as SAU {
+    component "Usuario" as US
+    component "Perfil" as PE
+    component "Sesion" as SE
+    component "Permiso" as PER
+    component "PersistenciaUsuarios" as PUS
+}
+database "BD Usuarios" as BDUS
+PUS ..> US
+PUS ..> PE
+PUS ..> SE
+PUS ..> PER
+PUS ..> BDUS
+SE ..> US
+US ..> PE
+PE ..> PER
+
+interface "IAutenticacionUsuariosRestAPI" as ISAU
+SAU - ISAU
+
+' ================= GPS TRACKER (GENERICO) =================
+component "ServicioIntegracionGPSTracker" <<microservicio>> as SGPS {
+    component "InterfazGPSTracker" as IGT
+}
+interface "ILocalizacionGPSRestAPI" as ISGPS
+SGPS - ISGPS
+interface "ILocalizacionGPSAPI" as ISGPSA
+SGPS -- ISGPSA
+
+' ================= MAPA (GENERICO) =================
+component "ServicioVisualizacionEnMapa" <<microservicio>> as SVM {
+    component "VisualizadorMapa" as VM
+}
+interface "IVisualizacionEnMapaRestAPI" as ISVM
+SVM - ISVM
+interface "IVisualizacionEnMapaAPI" as ISVMA
+SVM -- ISVMA
+label "ILibreriaGoogleMaps" as L19
+SVM -( L19
+
+' ================= NOTIFICACION MAIL (GENERICO) =================
+component "ServicioNotificacionMail" <<microservicio>> as SNM {
+    component "NotificadorMail" as NM
+}
+interface "INotificacionMailRestAPI" as ISNM
+SNM - ISNM
+interface "INotificacionMailAPI" as ISNMA
+SNM -- ISNMA
+
+' ================= POWER BI (GENERICO) =================
+component "ServicioIntegracionPowerBI" <<microservicio>> as SPBI {
+    component "GeneradorReportesPowerBI" as GRP
+}
+interface "IIntegracionPowerBIRestAPI" as ISPBI
+SPBI - ISPBI
+interface "IIntegracionPowerBIAPI" as ISPBIA
+SPBI -- ISPBIA
+@enduml

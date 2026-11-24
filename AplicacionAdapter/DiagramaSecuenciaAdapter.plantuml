@@ -1,0 +1,74 @@
+@startuml Diagrama Secuencia Patron Adapter
+' Se numera desde el mensaje 25 para mantener la misma numeración que el
+' diagrama de secuencia de análisis (Analisis/DiagramaDeSecuenciaPPAI.puml).
+autonumber 25 "<b>00-"
+skinparam style strictuml
+
+skinparam sequence {
+    LifeLineBackgroundColor #C5EBEF
+    LifeLineBorderColor #333333
+    ParticipantBackgroundColor #C5EBEF
+    ParticipantBorderColor #333333
+    ParticipantFontName Arial
+    ParticipantFontSize 11
+}
+
+skinparam entityBackgroundColor #C5EBEF
+skinparam entityBorderColor #333333
+skinparam controlBackgroundColor #C5EBEF
+skinparam controlBorderColor #333333
+skinparam boundaryBackgroundColor #C5EBEF
+skinparam boundaryBorderColor #333333
+
+title Diagrama de Secuencia de Diseño: CU 36 - Consultar seguimiento de bolsines (Patrón Adapter)\nEscenario: bolsines con GPS Tracker modelo XTR-4500L
+
+control "<b><u>:GestorSegBolsines" as G
+boundary "<b><u>:InterfazGPSTracker" as GPS
+participant "<b><u>:AdaptadorXTR4500L" as A
+participant "<b><u>:ServicioXTR4500L" as SX
+
+note over G, SX
+  <b>Los mensajes 01 a 24 continúan igual que en el diagrama de secuencia de análisis</b>
+  (opConsultarUbicBolsines, buscarCMUsuarioLogueado, mostrarNombreCM y
+  buscarBolsinesEnEstadoEnviado, donde el Gestor obtiene de cada bolsín su número,
+  precinto, CM destino y la marca y modelo de su DispositivoGPS).
+end note
+
+activate G
+G -> G ++ : buscarUbicacionBolsines()
+deactivate G
+
+loop para cada bolsín en estado Enviado
+    G -> GPS ++ : obtenerUbicacionBolsin(numeroBolsin: int, codigoCMOrigen: String,\ncodigoCMDestino: String, modeloGPS: String): String[]
+
+        GPS -> GPS ++ : crearAdaptador(modeloGPS: String): IAdaptadorGPSTracker
+            GPS -> GPS ++ : obtenerApiKey(modeloGPS: String): String
+            deactivate GPS
+            create A
+            GPS -> A : new(apiKey: String)
+        deactivate GPS
+
+        GPS -> A ++ : obtenerUbicacionBolsin(numeroBolsin: int, codigoCMOrigen: String,\ncodigoCMDestino: String): String[]
+
+            A -> A ++ : solicitarUbicacion()
+                A -> SX ++ : getBolsinLocation(apiKey: String, numeroBolsin: int,\ncodigoCMOrigen: String): String
+                deactivate SX
+            deactivate A
+
+            A -> A ++ : adaptarUbicacion()
+            deactivate A
+
+        deactivate A
+    deactivate GPS
+end
+
+note over G, SX
+  <b>A partir de aquí la secuencia continúa igual que en el análisis</b>
+  (obtenerMapaBolsines, mostrarMapaBolsines, solicitarSeleccionBolsin,
+  tomarSeleccionBolsin, tomarConfirmacionEnvioMail, buscarMailGerente,
+  enviarMailGerente, «include» CU 30 Notificar ubicación de bolsín,
+  mostrarMensajeEnvioMail y finCU).
+end note
+
+deactivate G
+@enduml
