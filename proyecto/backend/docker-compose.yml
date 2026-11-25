@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:17
+    container_name: ppai-bolsines-db
+    environment:
+      POSTGRES_USER: ppai
+      POSTGRES_PASSWORD: ppai
+      POSTGRES_DB: ppai_bolsines
+    ports:
+      - '5432:5432'
+    volumes:
+      - ppai-bolsines-data:/var/lib/postgresql/data
+
+volumes:
+  ppai-bolsines-data:

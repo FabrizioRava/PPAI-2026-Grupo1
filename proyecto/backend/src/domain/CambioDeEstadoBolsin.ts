@@ -1,33 +1,26 @@
 import { EstadoBolsin } from './EstadoBolsin';
+import { Empleado } from './Empleado';
 
 export class CambioDeEstadoBolsin {
-  private id: number;
-  private estadoBolsin: EstadoBolsin;
+  private estado: EstadoBolsin;
   private fechaHoraInicio: Date;
   private fechaHoraFin: Date | null;
+  private responsableCE: Empleado;
 
-  constructor(id: number, estadoBolsin: EstadoBolsin, fechaHoraInicio: Date, fechaHoraFin: Date | null = null) {
-    this.id = id;
-    this.estadoBolsin = estadoBolsin;
+  constructor(estado: EstadoBolsin, fechaHoraInicio: Date, fechaHoraFin: Date | null, responsableCE: Empleado) {
+    this.estado = estado;
     this.fechaHoraInicio = fechaHoraInicio;
     this.fechaHoraFin = fechaHoraFin;
+    this.responsableCE = responsableCE;
   }
 
   // --- Getters / Setters ---
-  getId(): number {
-    return this.id;
+  getEstado(): EstadoBolsin {
+    return this.estado;
   }
 
-  setId(id: number): void {
-    this.id = id;
-  }
-
-  getEstadoBolsin(): EstadoBolsin {
-    return this.estadoBolsin;
-  }
-
-  setEstadoBolsin(estadoBolsin: EstadoBolsin): void {
-    this.estadoBolsin = estadoBolsin;
+  setEstado(estado: EstadoBolsin): void {
+    this.estado = estado;
   }
 
   getFechaHoraInicio(): Date {
@@ -46,6 +39,14 @@ export class CambioDeEstadoBolsin {
     this.fechaHoraFin = fechaHoraFin;
   }
 
+  getResponsableCE(): Empleado {
+    return this.responsableCE;
+  }
+
+  setResponsableCE(responsableCE: Empleado): void {
+    this.responsableCE = responsableCE;
+  }
+
   // --- Comportamiento ---
   sosActual(): boolean {
     return this.fechaHoraInicio !== null && this.fechaHoraFin === null;
@@ -53,6 +54,6 @@ export class CambioDeEstadoBolsin {
 
   // Diagrama (paso 3): estAB -> estB: sosEnviado()
   sosEnviado(): boolean {
-    return this.estadoBolsin.sosEnviado();
+    return this.estado.sosEnviado();
   }
 }

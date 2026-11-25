@@ -1,0 +1,97 @@
+// Esquema de persistencia (PostgreSQL + Prisma) de las clases de dominio del CU 36.
+// Los nombres de las relaciones respetan los roles del modelo de dominio
+// (origen, destino, cambioEstado, estado, responsableCE, asignadoA, rol).
+// Los "id" existen solo en la base de datos: las clases de dominio se relacionan por punteros.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ComisionMedica {
+  id     Int    @id @default(autoincrement())
+  nombre String
+  codigo String @unique
+
+  empleados        Empleado[]
+  bolsinesOrigen   Bolsin[]   @relation("origen")
+  bolsinesDestino  Bolsin[]   @relation("destino")
+}
+
+model Rol {
+  id          Int    @id @default(autoincrement())
+  nombre      String
+  descripcion String @default("")
+
+  empleados Empleado[]
+}
+
+model Empleado {
+  id          Int            @id @default(autoincrement())
+  nombre      String
+  apellido    String
+  mail        String
+  rolId       Int
+  rol         Rol            @relation(fields: [rolId], references: [id])
+  asignadoAId Int
+  asignadoA   ComisionMedica @relation(fields: [asignadoAId], references: [id])
+
+  usuario       Usuario?
+  cambiosEstado CambioDeEstadoBolsin[]
+}
+
+model Usuario {
+  id            Int      @id @default(autoincrement())
+  nombreUsuario String   @unique
+  contrasena    String
+  empleadoId    Int      @unique
+  empleado      Empleado @relation(fields: [empleadoId], references: [id])
+}
+
+model EstadoBolsin {
+  id          Int    @id @default(autoincrement())
+  nombre      String @unique
+  descripcion String @default("")
+
+  cambiosEstado CambioDeEstadoBolsin[]
+}
+
+model DispositivoGPS {
+  id     Int    @id @default(autoincrement())
+  marca  String
+  modelo String
+
+  bolsin Bolsin?
+}
+
+model Bolsin {
+  id               Int            @id @default(autoincrement())
+  numeroBolsin     Int            @unique
+  numeroPrecinto   Int
+  fecha            DateTime
+  peso             Float
+  origenId         Int
+  origen           ComisionMedica @relation("origen", fields: [origenId], references: [id])
+  destinoId        Int
+  destino          ComisionMedica @relation("destino", fields: [destinoId], references: [id])
+  dispositivoGPSId Int            @unique
+  dispositivoGPS   DispositivoGPS @relation(fields: [dispositivoGPSId], references: [id])
+
+  cambioEstado CambioDeEstadoBolsin[]
+}
+
+model CambioDeEstadoBolsin {
+  id              Int          @id @default(autoincrement())
+  fechaHoraInicio DateTime
+  fechaHoraFin    DateTime?
+  bolsinId        Int
+  bolsin          Bolsin       @relation(fields: [bolsinId], references: [id])
+  estadoId        Int
+  estado          EstadoBolsin @relation(fields: [estadoId], references: [id])
+  responsableCEId Int
+  responsableCE   Empleado     @relation(fields: [responsableCEId], references: [id])
+}

@@ -6,13 +6,17 @@ import { UsuarioDTO, obtenerBolsinesActivos, notificarUbicacionBolsin, seleccion
 // Interfaz para la entidad Bolsín con los datos localizados
 export interface Bolsin {
   numeroPrecinto: number;
-  latitud: number;
-  longitud: number;
+  latitud: number | null; // null: el GPS Tracker no pudo informar la ubicación (A3)
+  longitud: number | null;
   estado: string;
-  fechaHoraActualizacion: string; // Atributo de fecha/hora de la última actualización GPS
+  fechaHoraActualizacion: string | null; // Atributo de fecha/hora de la última actualización GPS
   cmDestinoNombre: string; // Nombre de la Comisión Médica destino (paso 3 del diagrama)
   cmDestinoCodigo: string; // Código de la Comisión Médica destino
 }
+
+// Bolsín con ubicación informada por el GPS Tracker (los únicos que se dibujan en el mapa)
+export type BolsinConUbicacion = Bolsin & { latitud: number; longitud: number };
+const tieneUbicacion = (b: Bolsin): b is BolsinConUbicacion => b.latitud !== null && b.longitud !== null;
 
 export interface PantSegBolsinesProps {
   // Empleado logueado en la sesión actual (determina la CM de origen).
@@ -313,8 +317,10 @@ export const PantSegBolsines: React.FC<PantSegBolsinesProps> = ({ usuario, onVol
             >
               <div className="flex-1 relative overflow-hidden">
                 <MapaBolsines
-                  bolsines={bolsinesFiltrados}
-                  bolsinSeleccionado={bolsinSeleccionado}
+                  bolsines={bolsinesFiltrados.filter(tieneUbicacion)}
+                  bolsinSeleccionado={
+                    bolsinSeleccionado && tieneUbicacion(bolsinSeleccionado) ? bolsinSeleccionado : null
+                  }
                   onSeleccionarBolsin={tomarSeleccionBolsin}
                 />
               </div>
@@ -344,7 +350,9 @@ export const PantSegBolsines: React.FC<PantSegBolsinesProps> = ({ usuario, onVol
                         <div className="flex justify-between items-center py-1.5">
                           <span className="text-brand-bgMain/70 font-semibold">Última Lectura:</span>
                           <span className="text-brand-bgMain font-mono font-bold">
-                            {formatearFecha(bolsinSeleccionado.fechaHoraActualizacion)}
+                            {bolsinSeleccionado.fechaHoraActualizacion
+                              ? formatearFecha(bolsinSeleccionado.fechaHoraActualizacion)
+                              : 'Ubicación no disponible'}
                           </span>
                         </div>
                       </div>
@@ -352,7 +360,8 @@ export const PantSegBolsines: React.FC<PantSegBolsinesProps> = ({ usuario, onVol
                     <div className="mt-5 flex flex-col gap-2">
                       <button
                         onClick={() => setShowModal(true)}
-                        className="w-full py-2.5 bg-brand-primary text-white font-bold rounded-xl text-xs shadow-md"
+                        disabled={!tieneUbicacion(bolsinSeleccionado)}
+                        className="w-full py-2.5 bg-brand-primary text-white font-bold rounded-xl text-xs shadow-md disabled:opacity-50"
                       >
                         Notificar Ubicación
                       </button>
@@ -389,6 +398,9 @@ export const PantSegBolsines: React.FC<PantSegBolsinesProps> = ({ usuario, onVol
                               BOL-{String(bolsin.numeroPrecinto).padStart(3, '0')}
                             </span>
                             <div className="text-xs mt-0.5 text-brand-bgMain/65">Dest: {bolsin.cmDestinoNombre}</div>
+                            {!tieneUbicacion(bolsin) && (
+                              <div className="text-xs mt-0.5 text-rose-600">Ubicación no disponible</div>
+                            )}
                           </div>
                         </button>
                       );

@@ -8,9 +8,16 @@
     "dev": "nodemon --watch src -e ts --exec ts-node src/server.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:up": "docker compose up -d",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed"
+  },
+  "prisma": {
+    "seed": "ts-node -T prisma/seed.ts"
   },
   "dependencies": {
+    "@prisma/client": "6.19.3",
     "cors": "^2.8.5",
     "express": "^4.22.2",
     "swagger-jsdoc": "^6.3.0",
@@ -27,6 +34,7 @@
     "eslint": "^10.9.1",
     "nodemon": "^3.1.0",
     "prettier": "^3.9.6",
+    "prisma": "6.19.3",
     "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",

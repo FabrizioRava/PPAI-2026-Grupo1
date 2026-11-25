@@ -1,23 +1,13 @@
 export class ComisionMedica {
-  private id: number;
   private nombre: string;
   private codigo: string;
 
-  constructor(id: number, nombre: string, codigo: string) {
-    this.id = id;
+  constructor(nombre: string, codigo: string) {
     this.nombre = nombre;
     this.codigo = codigo;
   }
 
   // --- Getters / Setters ---
-  getId(): number {
-    return this.id;
-  }
-
-  setId(id: number): void {
-    this.id = id;
-  }
-
   getNombre(): string {
     return this.nombre;
   }

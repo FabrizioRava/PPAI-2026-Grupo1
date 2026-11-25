@@ -1,38 +1,17 @@
-import { randomUUID } from 'crypto';
 import { Usuario } from './Usuario';
-import { ComisionMedica } from './ComisionMedica';
 
 export class Sesion {
-  private id: number;
   private usuario: Usuario;
   private fechaHoraInicio: Date;
   private fechaHoraFin: Date | null;
-  private cmUsuarioLogueado: string;
-  private token: string;
 
-  private static sesiones: Map<string, Sesion> = new Map();
-  private static contadorId = 0;
-
-  constructor(usuario: Usuario, token: string) {
-    this.id = ++Sesion.contadorId;
+  constructor(usuario: Usuario) {
     this.usuario = usuario;
     this.fechaHoraInicio = new Date();
     this.fechaHoraFin = null;
-
-    const empleado = usuario.obtenerEmpleado();
-    this.cmUsuarioLogueado = empleado.obtenerCM().getNombreCM();
-    this.token = token;
   }
 
   // --- Getters / Setters ---
-  getId(): number {
-    return this.id;
-  }
-
-  setId(id: number): void {
-    this.id = id;
-  }
-
   getUsuario(): Usuario {
     return this.usuario;
   }
@@ -62,39 +41,9 @@ export class Sesion {
     this.fechaHoraFin = fechaHoraFin;
   }
 
-  getToken(): string {
-    return this.token;
-  }
-
-  setToken(token: string): void {
-    this.token = token;
-  }
-
   // --- Comportamiento ---
-  static iniciarSesion(usuario: Usuario): Sesion {
-    const token = randomUUID();
-    const sesion = new Sesion(usuario, token);
-    Sesion.sesiones.set(token, sesion);
-    return sesion;
-  }
-
-  static cerrarSesion(token: string | undefined): boolean {
-    if (!token) return false;
-    const sesion = Sesion.sesiones.get(token);
-    if (!sesion) return false;
-
-    sesion.fechaHoraFin = new Date();
-    Sesion.sesiones.delete(token);
-    return true;
-  }
-
-  static buscarPorToken(token: string | undefined): Sesion | null {
-    if (!token) return null;
-    const sesion = Sesion.sesiones.get(token);
-    return sesion && sesion.estaActiva() ? sesion : null;
-  }
-
-  buscarCMUsuarioLogueado(): ComisionMedica {
+  // Diagrama: S -> U: obtenerEmpleado(); U -> E: obtenerCM(). Retorna [nombreCM, codigoCM]
+  buscarCMUsuarioLogueado(): string[] {
     const empleado = this.usuario.obtenerEmpleado();
     return empleado.obtenerCM();
   }

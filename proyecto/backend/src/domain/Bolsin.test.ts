@@ -3,32 +3,35 @@ import { Bolsin } from './Bolsin';
 import { CambioDeEstadoBolsin } from './CambioDeEstadoBolsin';
 import { EstadoBolsin } from './EstadoBolsin';
 import { ComisionMedica } from './ComisionMedica';
+import { Empleado } from './Empleado';
+import { Rol } from './Rol';
 
-const estadoCreado = new EstadoBolsin(1, 'Creado');
-const estadoEnviado = new EstadoBolsin(2, 'Enviado');
-const cmVillaMaria = new ComisionMedica(1, 'Villa María', 'CM-VM');
-const cmCordoba = new ComisionMedica(2, 'Córdoba', 'CM-CBA');
+const estadoCreado = new EstadoBolsin('Creado');
+const estadoEnviado = new EstadoBolsin('Enviado');
+const cmVillaMaria = new ComisionMedica('Villa María', 'CM-VM');
+const cmCordoba = new ComisionMedica('Córdoba', 'CM-CBA');
+const responsable = new Empleado('Juan', 'Pérez', 'jperez@srt.gob.ar', new Rol('Administrativo'), cmVillaMaria);
 
 function crearBolsin(cambiosDeEstado: CambioDeEstadoBolsin[]): Bolsin {
-  return new Bolsin(1, 'BOL-4501', cmVillaMaria, cmCordoba, cambiosDeEstado, undefined, 4501);
+  return new Bolsin(1, 4501, new Date(), 2.5, cmVillaMaria, cmCordoba, cambiosDeEstado);
 }
 
 describe('Bolsin.sosEnviado', () => {
   it('devuelve true cuando el cambio de estado actual es "Enviado"', () => {
     const bolsin = crearBolsin([
-      new CambioDeEstadoBolsin(1, estadoCreado, new Date(Date.now() - 1000), new Date()),
-      new CambioDeEstadoBolsin(2, estadoEnviado, new Date(), null),
+      new CambioDeEstadoBolsin(estadoCreado, new Date(Date.now() - 1000), new Date(), responsable),
+      new CambioDeEstadoBolsin(estadoEnviado, new Date(), null, responsable),
     ]);
     expect(bolsin.sosEnviado()).toBe(true);
   });
 
   it('devuelve false cuando el cambio de estado actual no es "Enviado"', () => {
-    const bolsin = crearBolsin([new CambioDeEstadoBolsin(1, estadoCreado, new Date(), null)]);
+    const bolsin = crearBolsin([new CambioDeEstadoBolsin(estadoCreado, new Date(), null, responsable)]);
     expect(bolsin.sosEnviado()).toBe(false);
   });
 
   it('devuelve false cuando no hay ningún cambio de estado actual', () => {
-    const bolsin = crearBolsin([new CambioDeEstadoBolsin(1, estadoCreado, new Date(), new Date())]);
+    const bolsin = crearBolsin([new CambioDeEstadoBolsin(estadoCreado, new Date(), new Date(), responsable)]);
     expect(bolsin.sosEnviado()).toBe(false);
   });
 });

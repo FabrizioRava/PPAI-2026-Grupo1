@@ -23,14 +23,11 @@ skinparam stereotypeCFontSize 10
 hide circle
 
 class PantSegBolsines <<Boundary>> {
-  <font color="#8C2400">- bolsines : List</font>
-  <font color="#8C2400">- lblBolsinSeleccionado : String</font>
+  <font color="#8C2400">- bolsinesLocalizados : List</font>
+  <font color="#8C2400">- bolsinSeleccionado : Bolsin</font>
   <font color="#8C2400">- filtroNumeroPrecinto : String</font>
   <font color="#8C2400">- filtroCMDestino : String</font>
-  <font color="#8C2400">- opcionSeleccionarBolsin : boolean</font>
-  <font color="#8C2400">- opcionConfirmarEnvioMail : boolean</font>
-  <font color="#8C2400">- opcionCancelar : boolean</font>
-  <font color="#8C2400">- ubicacionBolsin : String</font>
+  <font color="#8C2400">- showModal : boolean</font>
   <font color="#8C2400">- nombreCM : String</font>
   --
   <font color="#1B6629">+ opConsultarUbicBolsines()</font>
@@ -118,6 +115,7 @@ class Empleado <<Entity>> {
 
 class Rol <<Entity>> {
   <font color="#8C2400">- nombre : String</font>
+  <font color="#8C2400">- descripcion : String</font>
   --
   <font color="#1B6629">+ esGerente()</font>
 }
@@ -133,6 +131,8 @@ class ComisionMedica <<Entity>> {
 class Bolsin <<Entity>> {
   <font color="#8C2400">- numeroPrecinto : int</font>
   <font color="#8C2400">- numeroBolsin : int</font>
+  <font color="#8C2400">- fecha : Date</font>
+  <font color="#8C2400">- peso : double</font>
   --
   <font color="#1B6629">+ sosEnviado()</font>
   <font color="#1B6629">+ esTuCMDeOrigen()</font>
@@ -166,7 +166,7 @@ PantSegBolsines <.. GestorSegBolsines
 GestorSegBolsines ..> InterfazGPSTracker
 GestorSegBolsines ..> InterfazMapa
 
-GestorSegBolsines ..> Sesion
+GestorSegBolsines --> "1" Sesion : sesionActual
 GestorSegBolsines ..> Empleado
 GestorSegBolsines ..> Bolsin
 
@@ -174,14 +174,15 @@ Sesion -> "1" Usuario : usuario
 Usuario -> "1" Empleado : empleado
 
 Empleado --> "1" Rol : rol
-Empleado ---> "1" ComisionMedica : comision medica
+Empleado ---> "1" ComisionMedica : asignadoA
 
-Bolsin --> "1 (origen)" ComisionMedica : cm origen
-Bolsin --> "1 (destino)" ComisionMedica : cm destino
-Bolsin --> "1" DispositivoGPS : dispositivoGps
+Bolsin --> "1" ComisionMedica : origen
+Bolsin --> "1" ComisionMedica : destino
+Bolsin --> "1" DispositivoGPS : dispositivoGPS
 
-Bolsin --> "1..*" CambioDeEstadoBolsin : cambio de estado bolsin
-CambioDeEstadoBolsin --> "1" EstadoBolsin : estado bolsin
+Bolsin --> "1..*" CambioDeEstadoBolsin : cambioEstado
+CambioDeEstadoBolsin --> "1" EstadoBolsin : estado
+CambioDeEstadoBolsin --> "1" Empleado : responsableCE
 
 
 DispositivoGPS -[hidden]up-> Bolsin

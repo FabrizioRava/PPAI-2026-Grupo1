@@ -8,9 +8,13 @@ import { EmpleadoRepository } from '../repositories/EmpleadoRepository';
 const bolsinRepository = new BolsinRepository();
 const empleadoRepository = new EmpleadoRepository();
 
+// Un GestorSegBolsines por sesión: se crea al iniciar el CU y conserva su estado
+// (bolsines, ubicaciones, bolsín seleccionado); se reemplaza en la próxima consulta.
+const gestoresPorSesion = new Map<Sesion, GestorSegBolsines>();
+
 function resolverSesion(req: Request): Sesion | null {
   const token = GestorLogin.obtenerToken(req);
-  return Sesion.buscarPorToken(token);
+  return GestorLogin.buscarPorToken(token);
 }
 
 export class BolsinesController {
@@ -30,7 +34,7 @@ export class BolsinesController {
    *       500:
    *         description: Error interno del servidor.
    */
-  static getBolsinesActivos(req: Request, res: Response): void {
+  static async getBolsinesActivos(req: Request, res: Response): Promise<void> {
     try {
       const sesion = resolverSesion(req);
       if (!sesion) {
@@ -39,7 +43,8 @@ export class BolsinesController {
       }
 
       const gestor = new GestorSegBolsines(bolsinRepository, empleadoRepository);
-      const respuesta = gestor.opConsultarUbicBolsines(sesion);
+      gestoresPorSesion.set(sesion, gestor);
+      const respuesta = await gestor.opConsultarUbicBolsines(sesion);
       res.status(200).json(respuesta);
     } catch (error: any) {
       console.error('[BolsinesController.getBolsinesActivos]', error);
@@ -91,7 +96,11 @@ export class BolsinesController {
         return;
       }
 
-      const gestor = new GestorSegBolsines(bolsinRepository, empleadoRepository);
+      const gestor = gestoresPorSesion.get(sesion);
+      if (!gestor) {
+        res.status(400).json({ error: 'Primero debe consultar la ubicación de los bolsines.' });
+        return;
+      }
       gestor.tomarSeleccionBolsin(numeroPrecinto);
       res.status(200).json({ exito: true, nroBolsinSeleccionado: numeroPrecinto });
     } catch (error: any) {
@@ -130,7 +139,7 @@ export class BolsinesController {
    *       500:
    *         description: Error interno del servidor.
    */
-  static notificarUbicacionBolsin(req: Request, res: Response): void {
+  static async notificarUbicacionBolsin(req: Request, res: Response): Promise<void> {
     try {
       const sesion = resolverSesion(req);
       if (!sesion) {
@@ -144,48 +153,15 @@ export class BolsinesController {
         return;
       }
 
-      const gestor = new GestorSegBolsines(bolsinRepository, empleadoRepository);
-      const resultado = gestor.tomarConfirmacionEnvioMail(numeroPrecinto, sesion);
+      const gestor = gestoresPorSesion.get(sesion);
+      if (!gestor) {
+        res.status(400).json({ error: 'Primero debe consultar la ubicación de los bolsines.' });
+        return;
+      }
+      const resultado = await gestor.tomarConfirmacionEnvioMail(numeroPrecinto);
       res.status(200).json(resultado);
     } catch (error: any) {
       console.error('[BolsinesController.notificarUbicacionBolsin]', error);
-      res.status(500).json({ error: 'Error interno del servidor.' });
-    }
-  }
-
-  /**
-   * @openapi
-   * /api/bolsines:
-   *   get:
-   *     summary: Obtiene el universo total de bolsines
-   *     description: Retorna una lista con la totalidad de los bolsines simulados junto con sus datos de localización GPS actual.
-   *     security:
-   *       - bearerAuth: []
-   *     responses:
-   *       200:
-   *         description: Operación exitosa. Devuelve la lista de bolsines.
-   *       401:
-   *         description: No autorizado. No se encontró una sesión activa.
-   *       500:
-   *         description: Error interno del servidor.
-   */
-  static getTodosLosBolsines(req: Request, res: Response): void {
-    try {
-      const sesion = resolverSesion(req);
-      if (!sesion) {
-        res.status(401).json({ error: 'No hay una sesión activa con un usuario logueado.' });
-        return;
-      }
-
-      const gestor = new GestorSegBolsines(bolsinRepository, empleadoRepository);
-      const cmUsuario = sesion.buscarCMUsuarioLogueado();
-      const nombreCM = cmUsuario ? cmUsuario.getNombreCM() : 'Sin Comisión';
-
-      const bolsinesConUbicacion = gestor.buscarUbicacionBolsines(bolsinRepository.getAll());
-
-      res.status(200).json({ nombreCM, bolsines: bolsinesConUbicacion });
-    } catch (error: any) {
-      console.error('[BolsinesController.getTodosLosBolsines]', error);
       res.status(500).json({ error: 'Error interno del servidor.' });
     }
   }

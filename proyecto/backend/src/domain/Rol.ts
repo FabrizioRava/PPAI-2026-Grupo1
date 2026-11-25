@@ -1,27 +1,27 @@
 export class Rol {
-  private id: number;
   private nombre: string;
+  private descripcion: string;
 
-  constructor(id: number, nombre: string) {
-    this.id = id;
+  constructor(nombre: string, descripcion: string = '') {
     this.nombre = nombre;
+    this.descripcion = descripcion;
   }
 
   // --- Getters / Setters ---
-  getId(): number {
-    return this.id;
-  }
-
-  setId(id: number): void {
-    this.id = id;
-  }
-
   getNombre(): string {
     return this.nombre;
   }
 
   setNombre(nombre: string): void {
     this.nombre = nombre;
+  }
+
+  getDescripcion(): string {
+    return this.descripcion;
+  }
+
+  setDescripcion(descripcion: string): void {
+    this.descripcion = descripcion;
   }
 
   // --- Comportamiento ---

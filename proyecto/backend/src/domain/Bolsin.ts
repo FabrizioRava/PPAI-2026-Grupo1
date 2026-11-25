@@ -4,76 +4,74 @@ import { EstadoBolsin } from './EstadoBolsin';
 import { DispositivoGPS } from './DispositivoGPS';
 
 export class Bolsin {
-  private id: number;
-  private codigo: string;
-  private comisionMedicaOrigen: ComisionMedica;
-  private comisionMedicaDestino: ComisionMedica;
-  private cambiosDeEstado: CambioDeEstadoBolsin[];
-  private dispositivoGPS: DispositivoGPS;
-  private numeroPrecinto: number;
   private numeroBolsin: number;
+  private numeroPrecinto: number;
+  private fecha: Date;
+  private peso: number;
+  private origen: ComisionMedica;
+  private destino: ComisionMedica;
+  private cambioEstado: CambioDeEstadoBolsin[];
+  private dispositivoGPS: DispositivoGPS;
 
   constructor(
-    id: number,
-    codigo: string,
-    comisionMedicaOrigen: ComisionMedica,
-    comisionMedicaDestino: ComisionMedica,
-    cambiosDeEstado: CambioDeEstadoBolsin[],
-    dispositivoGPS: DispositivoGPS = new DispositivoGPS(),
+    numeroBolsin: number,
     numeroPrecinto: number,
-    numeroBolsin?: number // Parámetro opcional para evitar romper mockData anteriores
+    fecha: Date,
+    peso: number,
+    origen: ComisionMedica,
+    destino: ComisionMedica,
+    cambioEstado: CambioDeEstadoBolsin[],
+    dispositivoGPS: DispositivoGPS = new DispositivoGPS()
   ) {
-    this.id = id;
-    this.codigo = codigo;
-    this.comisionMedicaOrigen = comisionMedicaOrigen;
-    this.comisionMedicaDestino = comisionMedicaDestino;
-    this.cambiosDeEstado = cambiosDeEstado;
-    this.dispositivoGPS = dispositivoGPS;
+    this.numeroBolsin = numeroBolsin;
     this.numeroPrecinto = numeroPrecinto;
-    // CORRECCIÓN: Asigna el parámetro si viene en el mock, sino usa el id por defecto.
-    // Evita llamar a métodos de instancia en el constructor.
-    this.numeroBolsin = numeroBolsin !== undefined ? numeroBolsin : id;
+    this.fecha = fecha;
+    this.peso = peso;
+    this.origen = origen;
+    this.destino = destino;
+    this.cambioEstado = cambioEstado;
+    this.dispositivoGPS = dispositivoGPS;
   }
 
   // --- Getters / Setters ---
-  getId(): number {
-    return this.id;
+  getFecha(): Date {
+    return this.fecha;
   }
 
-  setId(id: number): void {
-    this.id = id;
+  setFecha(fecha: Date): void {
+    this.fecha = fecha;
   }
 
-  getCodigo(): string {
-    return this.codigo;
+  getPeso(): number {
+    return this.peso;
   }
 
-  setCodigo(codigo: string): void {
-    this.codigo = codigo;
+  setPeso(peso: number): void {
+    this.peso = peso;
   }
 
-  getComisionMedicaOrigen(): ComisionMedica {
-    return this.comisionMedicaOrigen;
+  getOrigen(): ComisionMedica {
+    return this.origen;
   }
 
-  setComisionMedicaOrigen(comisionMedicaOrigen: ComisionMedica): void {
-    this.comisionMedicaOrigen = comisionMedicaOrigen;
+  setOrigen(origen: ComisionMedica): void {
+    this.origen = origen;
   }
 
-  getComisionMedicaDestino(): ComisionMedica {
-    return this.comisionMedicaDestino;
+  getDestino(): ComisionMedica {
+    return this.destino;
   }
 
-  setComisionMedicaDestino(comisionMedicaDestino: ComisionMedica): void {
-    this.comisionMedicaDestino = comisionMedicaDestino;
+  setDestino(destino: ComisionMedica): void {
+    this.destino = destino;
   }
 
-  getCambiosDeEstado(): CambioDeEstadoBolsin[] {
-    return this.cambiosDeEstado;
+  getCambioEstado(): CambioDeEstadoBolsin[] {
+    return this.cambioEstado;
   }
 
-  setCambiosDeEstado(cambiosDeEstado: CambioDeEstadoBolsin[]): void {
-    this.cambiosDeEstado = cambiosDeEstado;
+  setCambioEstado(cambioEstado: CambioDeEstadoBolsin[]): void {
+    this.cambioEstado = cambioEstado;
   }
 
   getDispositivoGPS(): DispositivoGPS {
@@ -100,14 +98,14 @@ export class Bolsin {
 
   // Diagrama: G -> B: sosEnviado()
   sosEnviado(): boolean {
-    const actual = this.cambiosDeEstado.find((c) => c.sosActual());
+    const actual = this.cambioEstado.find((c) => c.sosActual());
     if (!actual) return false;
     return actual.sosEnviado();
   }
 
   // Diagrama: G -> B: esTuCMDeOrigen(codigoCM)
   esTuCMDeOrigen(codigoCM: string): boolean {
-    return this.comisionMedicaOrigen.getCodigoCM() === codigoCM;
+    return this.origen.getCodigoCM() === codigoCM;
   }
 
   // Diagrama: G -> B: getNumeroBolsin()
@@ -117,17 +115,19 @@ export class Bolsin {
 
   // Soporte para armar el objeto plano de la ubicación
   getEstadoActual(): EstadoBolsin | null {
-    const actual = this.cambiosDeEstado.find((c) => c.sosActual());
-    return actual ? actual.getEstadoBolsin() : null;
+    const actual = this.cambioEstado.find((c) => c.sosActual());
+    return actual ? actual.getEstado() : null;
   }
 
-  // Diagrama: G -> B: obtenerCMDestino()
-  obtenerCMDestino(): ComisionMedica {
-    return this.comisionMedicaDestino;
+  // Diagrama: G -> B: obtenerCMDestino(); B -> CM: getCodigoCM(), getNombreCM()
+  // Retorna [nombreCM, codigoCM]
+  obtenerCMDestino(): string[] {
+    return [this.destino.getNombreCM(), this.destino.getCodigoCM()];
   }
 
-  // Diagrama: G -> B: obtenerDispositivoGPS()
-  obtenerDispositivoGPS(): DispositivoGPS {
-    return this.dispositivoGPS;
+  // Diagrama: G -> B: obtenerDispositivoGPS(); B -> DGPS: getMarcaGPS(), getModeloGPS()
+  // Retorna [marca, modelo]
+  obtenerDispositivoGPS(): string[] {
+    return [this.dispositivoGPS.getMarcaGPS(), this.dispositivoGPS.getModeloGPS()];
   }
 }

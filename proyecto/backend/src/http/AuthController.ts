@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { Sesion } from '../domain/Sesion';
 import { GestorLogin } from '../controllers/GestorLogin';
 import { UsuarioRepository } from '../repositories/UsuarioRepository';
 
@@ -38,7 +37,7 @@ export class AuthController {
    *       500:
    *         description: Error interno del servidor.
    */
-  static login(req: Request, res: Response): void {
+  static async login(req: Request, res: Response): Promise<void> {
     try {
       const { username, password } = req.body ?? {};
       if (!username || !password) {
@@ -47,16 +46,16 @@ export class AuthController {
       }
 
       const gestorLogin = new GestorLogin(usuarioRepository);
-      const usuario = gestorLogin.autenticar(username, password);
+      const usuario = await gestorLogin.autenticar(username, password);
       if (!usuario) {
         res.status(401).json({ error: 'Usuario o contraseña incorrectos.' });
         return;
       }
 
-      const sesion = Sesion.iniciarSesion(usuario);
+      const token = GestorLogin.iniciarSesion(usuario);
 
       res.status(200).json({
-        token: sesion.getToken(),
+        token,
         usuario: usuario.toJSON(),
       });
     } catch (error: any) {
@@ -82,7 +81,7 @@ export class AuthController {
   static logout(req: Request, res: Response): void {
     try {
       const token = GestorLogin.obtenerToken(req);
-      const cerrada = Sesion.cerrarSesion(token);
+      const cerrada = GestorLogin.cerrarSesion(token);
       res.status(200).json({ exito: cerrada });
     } catch (error: any) {
       console.error('[AuthController.logout]', error);
@@ -109,7 +108,7 @@ export class AuthController {
   static me(req: Request, res: Response): void {
     try {
       const token = GestorLogin.obtenerToken(req);
-      const sesion = Sesion.buscarPorToken(token);
+      const sesion = GestorLogin.buscarPorToken(token);
       if (!sesion) {
         res.status(401).json({ error: 'No hay una sesión activa.' });
         return;

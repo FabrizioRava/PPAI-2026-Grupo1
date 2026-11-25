@@ -44,10 +44,23 @@ describe('GET /api/bolsines/activos', () => {
   });
 });
 
+describe('A3: el GPS Tracker no pudo informar la ubicación', () => {
+  it('devuelve el bolsín sin ubicación y sigue informando los demás', async () => {
+    const login = await request(app).post('/api/login').send({ username: 'jperez', password: '1234' });
+    const res = await request(app).get('/api/bolsines/activos').set('Authorization', `Bearer ${login.body.token}`);
+
+    const sinSenal = res.body.bolsines.find((b: { numeroPrecinto: number }) => b.numeroPrecinto === 4507);
+    expect(res.status).toBe(200);
+    expect(sinSenal.latitud).toBeNull();
+    expect(res.body.bolsines.filter((b: { latitud: number | null }) => b.latitud !== null).length).toBe(5);
+  });
+});
+
 describe('POST /api/bolsines/notificar', () => {
   it('notifica con éxito un bolsín válido de la sesión activa', async () => {
     const login = await request(app).post('/api/login').send({ username: 'jperez', password: '1234' });
     const token = login.body.token;
+    await request(app).get('/api/bolsines/activos').set('Authorization', `Bearer ${token}`);
 
     const res = await request(app)
       .post('/api/bolsines/notificar')

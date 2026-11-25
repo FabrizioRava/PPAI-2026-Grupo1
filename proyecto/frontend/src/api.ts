@@ -4,13 +4,12 @@
 export const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:3000';
 
 export interface UsuarioDTO {
-  id: number;
   username: string;
   nombre: string;
   apellido: string;
   correo: string;
   rol: string;
-  comisionMedica: { id: number; nombre: string; codigo: string };
+  comisionMedica: { nombre: string; codigo: string };
 }
 
 const TOKEN_KEY = 'ppai.token';

@@ -1,23 +1,13 @@
 export class EstadoBolsin {
-  private id: number;
   private nombre: string;
   private descripcion: string;
 
-  constructor(id: number, nombre: string, descripcion: string = '') {
-    this.id = id;
+  constructor(nombre: string, descripcion: string = '') {
     this.nombre = nombre;
     this.descripcion = descripcion;
   }
 
   // --- Getters / Setters ---
-  getId(): number {
-    return this.id;
-  }
-
-  setId(id: number): void {
-    this.id = id;
-  }
-
   getNombre(): string {
     return this.nombre;
   }

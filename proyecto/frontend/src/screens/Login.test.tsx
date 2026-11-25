@@ -10,13 +10,12 @@ vi.mock('../api', async () => {
 });
 
 const usuarioMock: api.UsuarioDTO = {
-  id: 1,
   username: 'jperez',
   nombre: 'Juan',
   apellido: 'Pérez',
   correo: 'jperez@srt.gob.ar',
   rol: 'Administrativo',
-  comisionMedica: { id: 1, nombre: 'Villa María', codigo: 'CM-VM' },
+  comisionMedica: { nombre: 'Villa María', codigo: 'CM-VM' },
 };
 
 describe('Login', () => {

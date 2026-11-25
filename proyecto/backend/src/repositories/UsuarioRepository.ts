@@ -1,8 +1,11 @@
 import { Usuario } from '../domain/Usuario';
-import { usuarios } from '../mockData';
+import { prisma } from './prisma';
+import { MapeadorDominio } from './MapeadorDominio';
 
 export class UsuarioRepository {
-  getAll(): Usuario[] {
-    return usuarios;
+  async getAll(): Promise<Usuario[]> {
+    const filas = await prisma.usuario.findMany({ include: { empleado: { include: { rol: true, asignadoA: true } } } });
+    const mapeador = new MapeadorDominio();
+    return filas.map((f) => new Usuario(f.nombreUsuario, f.contrasena, mapeador.empleado(f.empleado)));
   }
 }

@@ -2,31 +2,21 @@ import { Rol } from './Rol';
 import { ComisionMedica } from './ComisionMedica';
 
 export class Empleado {
-  private id: number;
   private nombre: string;
   private apellido: string;
   private mail: string;
   private rol: Rol;
-  private comisionMedica: ComisionMedica;
+  private asignadoA: ComisionMedica;
 
-  constructor(id: number, nombre: string, apellido: string, mail: string, rol: Rol, comisionMedica: ComisionMedica) {
-    this.id = id;
+  constructor(nombre: string, apellido: string, mail: string, rol: Rol, asignadoA: ComisionMedica) {
     this.nombre = nombre;
     this.apellido = apellido;
     this.mail = mail;
     this.rol = rol;
-    this.comisionMedica = comisionMedica;
+    this.asignadoA = asignadoA;
   }
 
   // --- Getters / Setters ---
-  getId(): number {
-    return this.id;
-  }
-
-  setId(id: number): void {
-    this.id = id;
-  }
-
   getNombre(): string {
     return this.nombre;
   }
@@ -59,25 +49,24 @@ export class Empleado {
     this.rol = rol;
   }
 
-  getComisionMedica(): ComisionMedica {
-    return this.comisionMedica;
+  getAsignadoA(): ComisionMedica {
+    return this.asignadoA;
   }
 
-  setComisionMedica(comisionMedica: ComisionMedica): void {
-    this.comisionMedica = comisionMedica;
+  setAsignadoA(asignadoA: ComisionMedica): void {
+    this.asignadoA = asignadoA;
   }
 
   // --- Mensajes del diagrama de secuencia / comportamiento ---
 
-  // Diagrama (paso 2): el mensaje se llama obtenerCM; devuelve la CM del empleado
-  // para que luego se consulten getNombreCM()/getCodigoCM() sobre ella.
-  obtenerCM(): ComisionMedica {
-    return this.comisionMedica;
+  // Diagrama (paso 2): E -> CM: getNombreCM(), getCodigoCM(). Retorna [nombreCM, codigoCM]
+  obtenerCM(): string[] {
+    return [this.asignadoA.getNombreCM(), this.asignadoA.getCodigoCM()];
   }
 
   // Diagrama (paso 10): el empleado pertenece a la CM destino indicada
-  esTuCM(comisionMedica: ComisionMedica): boolean {
-    return this.comisionMedica.getId() === comisionMedica.getId();
+  esTuCM(codigoCM: string): boolean {
+    return this.asignadoA.getCodigoCM() === codigoCM;
   }
 
   // Diagrama (paso 10): el empleado es Gerente (delega en su Rol)

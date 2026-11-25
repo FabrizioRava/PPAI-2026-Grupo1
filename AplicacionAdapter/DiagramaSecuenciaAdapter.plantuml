@@ -66,7 +66,7 @@ note over G, SX
   <b>A partir de aquí la secuencia continúa igual que en el análisis</b>
   (obtenerMapaBolsines, mostrarMapaBolsines, solicitarSeleccionBolsin,
   tomarSeleccionBolsin, tomarConfirmacionEnvioMail, buscarMailGerente,
-  enviarMailGerente, «include» CU 30 Notificar ubicación de bolsín,
+  enviarMailGerente, «include» CU 31 Notificar ubicación de bolsín,
   mostrarMensajeEnvioMail y finCU).
 end note
 
