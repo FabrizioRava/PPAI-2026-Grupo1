@@ -38,7 +38,7 @@ activate G
 G -> G ++ : buscarUbicacionBolsines()
 deactivate G
 
-loop para cada bolsín en estado Enviado
+group Bolsines en estado enviado [Mientras haya bolsínes enviados]
     G -> GPS ++ : obtenerUbicacionBolsin(numeroBolsin: int, codigoCMOrigen: String,\ncodigoCMDestino: String, modeloGPS: String): String[]
 
         GPS -> GPS ++ : crearAdaptador(modeloGPS: String): IAdaptadorGPSTracker
